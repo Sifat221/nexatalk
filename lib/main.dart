@@ -22,10 +22,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 1. Initialize Firebase Core
+  bool isFirebaseInitialized = false;
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    isFirebaseInitialized = true;
   } catch (e) {
     if (kDebugMode) {
       print('Firebase.initializeApp note: $e');
@@ -35,14 +37,24 @@ void main() async {
   // 2. Initialize Local Persistence
   final persistenceService = await PersistenceService.init();
 
-  // 3. Instantiate Real Firebase Services
-  final AuthService authService = FirebaseAuthService(persistence: persistenceService);
-  final ChatService chatService = FirestoreChatService(persistence: persistenceService);
+  // 3. Instantiate Real Firebase Services (with graceful fallback)
+  final AuthService authService = isFirebaseInitialized
+      ? FirebaseAuthService(persistence: persistenceService)
+      : MockAuthService(persistenceService);
+
+  final ChatService chatService = isFirebaseInitialized
+      ? FirestoreChatService(persistence: persistenceService)
+      : MockChatService(persistenceService);
+
   final storageService = StorageService();
   final notificationService = NotificationService();
 
-  // 4. Initialize FCM Push Notifications
-  await notificationService.init(persistenceService.getSavedUser()?.id);
+  // 4. Initialize FCM Push Notifications (non-blocking for web)
+  if (isFirebaseInitialized && !kIsWeb) {
+    try {
+      await notificationService.init(persistenceService.getSavedUser()?.id);
+    } catch (_) {}
+  }
 
   runApp(
     NexaTalkApp(

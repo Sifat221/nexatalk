@@ -2,7 +2,23 @@
 
 > **Connect simply. Chat naturally.**
 
-NexaTalk is a responsive, dark-first real-time messaging application built with **Flutter** and backed entirely by **Google Firebase** (Firebase Authentication, Cloud Firestore, and Firebase Cloud Messaging). The architecture operates serverlessly under the **Firebase Spark (Free) plan**, delivering multi-user direct messaging, group conversations, live typing indicators, read receipts, emoji reactions, and user directory search without requiring external servers or database infrastructure.
+[![GitHub](https://img.shields.io/badge/GitHub-Sifat221%2Fnexatalk-181717?logo=github)](https://github.com/Sifat221/nexatalk)
+[![Firebase Hosting](https://img.shields.io/badge/Live_Demo-nexa--talk--169ff.web.app-FFA611?logo=firebase)](https://nexa-talk-169ff.web.app)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+---
+
+## 🌐 Live Demo & Repository Links
+
+* **Live Web App**: [https://nexa-talk-169ff.web.app](https://nexa-talk-169ff.web.app)
+* **Alternative Domain**: [https://nexa-talk-169ff.firebaseapp.com](https://nexa-talk-169ff.firebaseapp.com)
+* **GitHub Repository**: [https://github.com/Sifat221/nexatalk](https://github.com/Sifat221/nexatalk)
+
+---
+
+## 📖 Project Overview
+
+NexaTalk is a responsive, dark-first real-time messaging application built with **Flutter** and backed entirely by **Google Firebase** (Firebase Authentication, Cloud Firestore, and Firebase Cloud Messaging). The application operates serverlessly under the **Firebase Spark (Free) plan**, delivering multi-user direct messaging, group conversations, live typing indicators, read receipts, emoji reactions, and user directory search without requiring external servers or custom database infrastructure.
 
 ---
 
@@ -32,12 +48,12 @@ NexaTalk connects Flutter clients (Android, iOS, Web, Desktop) directly to Fireb
 ## ✨ Key Features
 
 ### 🔐 Authentication
-* **Email & Password**: Real Firebase Authentication sign-up and login with automatic Firestore user profile synchronization.
+* **Email & Password**: Real Firebase Authentication sign-up and sign-in with automatic Firestore user profile synchronization.
 * **Session Persistence**: Persistent local auth tokens backed by `SharedPreferences`.
 * **Password Reset**: Automated password reset emails delivered via Firebase Auth.
 * **Friendly Error Handling**: Maps Firebase error codes (`invalid-credential`, `email-already-in-use`, `weak-password`, `too-many-requests`) into user-friendly notifications.
 * **One-Tap Demo Login**: Instant test authentication for local development and review.
-* **Phone & Google Sign-In Status**: Code interfaces are implemented in [`lib/services/firebase_auth_service.dart`](file:///f:/NexaTalk/lib/services/firebase_auth_service.dart). Google Sign-In and Phone OTP require valid SHA-1 certificate fingerprints added in the Firebase Console (the Android client includes the generated OAuth client configuration).
+* **Phone & Google Sign-In Status**: Code interfaces are implemented in `lib/services/firebase_auth_service.dart`. Google Sign-In and Phone OTP require valid SHA-1 certificate fingerprints added in the Firebase Console (the Android client includes the generated OAuth client configuration).
 
 ### 💬 Real-Time Messaging
 * **Direct 1-on-1 Chat**: Low-latency message synchronization using Firestore snapshot listeners (`snapshots()`).
@@ -119,7 +135,7 @@ conversations/ (collection)
 
 ## 🛡️ Security Rules
 
-Firestore security is enforced via declarative rules in [`firestore.rules`](file:///f:/NexaTalk/firestore.rules):
+Firestore security is enforced via declarative rules in `firestore.rules`:
 
 * **Unauthenticated Access Blocked**: All read and write requests require valid `request.auth`.
 * **Profile Protection**: Users can only create or update their own user document (`request.auth.uid == userId`). Arbitrary profile deletion is disabled.
@@ -146,7 +162,7 @@ Firestore security is enforced via declarative rules in [`firestore.rules`](file
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/Sifat221/nexatalk.git
-cd nexaTalk
+cd nexatalk
 ```
 
 ### 2. Install Dependencies
@@ -162,7 +178,7 @@ The repository includes sample client configurations configured for `nexa-talk-1
 To connect your own Firebase project:
 1. Enable **Email/Password** under Firebase Console > **Authentication** > **Sign-in method**.
 2. Create a **Cloud Firestore** database in test/production mode.
-3. Publish the rules from [`firestore.rules`](file:///f:/NexaTalk/firestore.rules) in the Firebase Console **Rules** tab.
+3. Publish the rules from `firestore.rules` in the Firebase Console **Rules** tab.
 4. Run `flutterfire configure` to generate your project's `firebase_options.dart`.
 
 ---
@@ -188,6 +204,24 @@ flutter run -d chrome
 ```bash
 flutter run -d windows
 ```
+
+---
+
+## 🌐 Deploying to Firebase Hosting
+
+To build and deploy the Flutter Web application to Firebase Hosting:
+
+```bash
+# 1. Build the production Web bundle
+flutter build web
+
+# 2. Deploy only Firebase Hosting
+firebase deploy --only hosting
+```
+
+Your web app will be live at:
+* `https://<your-project-id>.web.app`
+* `https://<your-project-id>.firebaseapp.com`
 
 ---
 
@@ -240,12 +274,11 @@ lib/
 
 ---
 
-## 🔮 Future Roadmap
+## ⚠️ Known Limitations
 
-- [ ] Firebase Storage integration when upgraded to Blaze plan (Voice notes, photo sharing, PDF previews).
-- [ ] End-to-End Encryption (E2EE) for 1-on-1 direct conversations.
-- [ ] Full WebRTC peer-to-peer audio/video calling.
-- [ ] Group member role management (Admin, Moderator, Member).
+1. **Firebase Storage / Media Uploads**: Media uploads (photos, videos, documents, audio messages) require upgrading to the Google Cloud / Firebase Blaze plan. On the free Spark plan, media upload triggers an informative banner while text chat remains fully operational.
+2. **Apple & Phone Authentication**: The client code interfaces for Apple Sign-In and Phone OTP are implemented; live production use requires configuring Apple Developer Team credentials and enabling SMS verification quotas in Firebase Console.
+3. **Web Push (FCM)**: Web push notifications require a custom VAPID key configured in the Firebase Console.
 
 ---
 
@@ -253,6 +286,7 @@ lib/
 
 * **Framework**: Flutter 3 (Dart 3)
 * **Backend as a Service**: Firebase (Authentication, Cloud Firestore, Cloud Messaging)
+* **Hosting**: Firebase Hosting
 * **State Management**: Provider
 * **Storage & Persistence**: SharedPreferences
 * **UI Design**: Material 3, Dark & OLED Mode, Custom Glassmorphic Gradients

@@ -91,6 +91,11 @@ desktop.ini
 *serviceAccountKey*.json
 
 # ==========================================
+# Firebase CLI Cache
+# ==========================================
+.firebase/
+
+# ==========================================
 # Legacy Backend (Archived Reference)
 # ==========================================
 node_modules/

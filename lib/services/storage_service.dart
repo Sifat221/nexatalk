@@ -4,7 +4,8 @@ import 'package:flutter/foundation.dart';
 
 /// Firebase Storage Service handling media attachment uploads (images, documents, audio, avatars).
 class StorageService {
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  FirebaseStorage? _storageInstance;
+  FirebaseStorage get _storage => _storageInstance ??= FirebaseStorage.instance;
 
   /// Prompts user to pick a file (image, video, document) and uploads it to Firebase Storage.
   /// Returns a map with download URL and file metadata, or null if canceled.
