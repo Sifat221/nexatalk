@@ -1,0 +1,29 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper function to check authentication
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Attachments for conversations: Allow authenticated users to read and upload valid media up to 50MB
+    match /conversations/{conversationId}/attachments/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() 
+                   && request.resource.size < 50 * 1024 * 1024
+                   && (request.resource.contentType.matches('image/.*') 
+                       || request.resource.contentType.matches('video/.*') 
+                       || request.resource.contentType.matches('audio/.*') 
+                       || request.resource.contentType.matches('application/.*'));
+    }
+
+    // User profile avatars: Only the user can upload their own avatar, max 10MB image
+    match /users/{userId}/avatar/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() 
+                   && request.auth.uid == userId 
+                   && request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "506043633582",
+    "project_id": "nexa-talk-169ff",
+    "storage_bucket": "nexa-talk-169ff.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:506043633582:android:114ab6a385497723c6823f",
+        "android_client_info": {
+          "package_name": "com.nexatalk.nexatalk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "506043633582-er4lguvo0tevjjcejjq00hbttiklmkh7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nexatalk.nexatalk",
+            "certificate_hash": "385380db88eebdfa91a1eeebe5eae737f250d58d"
+          }
+        },
+        {
+          "client_id": "506043633582-6k2vamauia5r9urgjgt5mkp8nab15t93.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5bv1_5et5pGcs4tthHjXm4MF6kX2gT0A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "506043633582-6k2vamauia5r9urgjgt5mkp8nab15t93.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "506043633582-r1290ib6omfmqa0ksss60fnq7aekb277.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.nexatalk.nexatalk"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
