@@ -102,6 +102,7 @@ class PersistenceService {
   // --- Clear / Reset ---
   Future<void> clearSession() async {
     await _prefs.remove(_keyAuthUser);
+    await _prefs.remove(_keyConversations);
     await clearTokens();
   }
 

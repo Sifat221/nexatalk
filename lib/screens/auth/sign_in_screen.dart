@@ -48,15 +48,14 @@ class _SignInScreenState extends State<SignInScreen> {
     }
   }
 
-  Future<void> _handleQuickDemoLogin() async {
-    final auth = context.read<AuthController>();
-    final success = await auth.quickDemoLogin();
-    if (success && mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-        (route) => false,
-      );
-    }
+  void _handleMailTap() {
+    // Focus email input field for direct email sign-in
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Please enter your email and password above to sign in.'),
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   Future<void> _handleGoogleSignIn() async {
@@ -258,28 +257,11 @@ class _SignInScreenState extends State<SignInScreen> {
                       _buildSocialTile(
                         icon: Icons.mail_outline_rounded,
                         iconSize: 22,
-                        onTap: _handleQuickDemoLogin,
+                        onTap: _handleMailTap,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 18),
-
-                  // Quick Demo Login Chip (ensures widget test passing and easy testing)
-                  Center(
-                    child: TextButton.icon(
-                      onPressed: _handleQuickDemoLogin,
-                      icon: const Icon(Icons.bolt_rounded, size: 16, color: AppColors.primaryLight),
-                      label: Text(
-                        AppStrings.quickDemoLogin,
-                        style: const TextStyle(
-                          color: Color(0xFF8E9FA8),
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 28),
 
                   // Footer: Don't have an account? Sign up
                   Center(

@@ -43,23 +43,29 @@ class MockChatService implements ChatService {
 
   final Map<String, StreamController<List<MessageModel>>> _messageStreamControllers = {};
   final Map<String, List<MessageModel>> _messagesMap = {};
+  final bool seedDemoData;
   List<ConversationModel> _conversations = [];
-  final List<ContactModel> _contacts = ContactModel.mockContacts;
+  List<ContactModel> _contacts = [];
   final Map<String, Timer?> _typingTimers = {};
 
-  MockChatService(this._persistence) {
+  MockChatService(this._persistence, {this.seedDemoData = false}) {
     _initializeData();
   }
 
   void _initializeData() {
-    final cached = _persistence.getSavedConversations();
-    if (cached != null && cached.isNotEmpty) {
-      _conversations = cached;
+    if (seedDemoData) {
+      _contacts = List.from(ContactModel.mockContacts);
+      final cached = _persistence.getSavedConversations();
+      if (cached != null && cached.isNotEmpty) {
+        _conversations = cached;
+      } else {
+        _conversations = _buildInitialConversations();
+      }
+      _populateInitialMessages();
     } else {
-      _conversations = _buildInitialConversations();
+      _conversations = [];
+      _contacts = [];
     }
-
-    _populateInitialMessages();
 
     Future.microtask(() {
       _conversationsController.add(List.unmodifiable(_conversations));

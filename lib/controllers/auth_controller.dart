@@ -84,7 +84,7 @@ class AuthController extends ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        return quickDemoLogin();
+        throw Exception('Google Sign-In is unavailable in offline mock mode.');
       }
     } catch (e) {
       _isLoading = false;
@@ -108,7 +108,7 @@ class AuthController extends ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        return quickDemoLogin();
+        throw Exception('Apple Sign-In is unavailable in offline mock mode.');
       }
     } catch (e) {
       _isLoading = false;

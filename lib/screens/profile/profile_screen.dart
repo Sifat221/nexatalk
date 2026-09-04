@@ -422,7 +422,7 @@ class ProfileScreen extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
                   child: Text(
-                    user.bio.isNotEmpty ? user.bio : 'Never give up',
+                    user.bio.isNotEmpty ? user.bio : 'Connect simply. Chat naturally. ✨',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 14,

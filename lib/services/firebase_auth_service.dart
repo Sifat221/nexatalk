@@ -195,16 +195,6 @@ class FirebaseAuthService implements AuthService {
       }
     }
 
-    // Support fallback for demo 6-digit code if testing locally
-    if (code.trim() == '123456') {
-      if (_currentUser != null) {
-        return true;
-      }
-      // Demo auto-sign in
-      await demoLogin('primary');
-      return true;
-    }
-
     return false;
   }
 

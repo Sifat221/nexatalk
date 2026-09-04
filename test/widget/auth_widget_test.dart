@@ -33,7 +33,7 @@ void main() {
     expect(find.text(AppStrings.welcomeBack), findsOneWidget);
     expect(find.text(AppStrings.signInSubtitle), findsOneWidget);
     expect(find.text(AppStrings.signIn), findsOneWidget);
-    expect(find.text(AppStrings.quickDemoLogin), findsOneWidget);
+    expect(find.text(AppStrings.forgotPassword), findsOneWidget);
     expect(find.text(AppStrings.signUp), findsOneWidget);
   });
 }

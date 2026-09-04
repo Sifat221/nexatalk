@@ -127,7 +127,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(width: 4),
                     CustomAvatar(
-                      name: authCtrl.currentUser?.name ?? 'Nahid Hasan',
+                      name: (authCtrl.currentUser?.name.isNotEmpty == true)
+                          ? authCtrl.currentUser!.name
+                          : (authCtrl.currentUser?.email.split('@').first ?? 'User'),
                       radius: 17,
                       isOnline: true,
                       showOnlineIndicator: true,

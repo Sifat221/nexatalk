@@ -17,7 +17,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       persistence = PersistenceService(prefs);
-      chatService = MockChatService(persistence);
+      chatService = MockChatService(persistence, seedDemoData: true);
       chatController = ChatController(chatService);
     });
 

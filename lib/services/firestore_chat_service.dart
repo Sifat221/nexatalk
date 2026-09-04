@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import '../models/contact_model.dart';
 import '../models/conversation_model.dart';
 import '../models/message_model.dart';
@@ -20,35 +22,73 @@ class FirestoreChatService implements ChatService {
   List<ConversationModel> _conversations = [];
 
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _conversationsSub;
+  StreamSubscription<User?>? _authSub;
+  String? _activeListeningUid;
   final Map<String, StreamSubscription?> _messageSubs = {};
 
   FirestoreChatService({required this.persistence}) {
-    // 1. Initial cached conversations
-    final cached = persistence.getSavedConversations();
-    if (cached != null && cached.isNotEmpty) {
-      _conversations = cached;
+    // 1. Listen to real Firebase Auth changes to bind conversations listener to currentUser
+    _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
+        if (_activeListeningUid != user.uid) {
+          _activeListeningUid = user.uid;
+          _initConversationsListener(user.uid);
+        }
+      } else {
+        _activeListeningUid = null;
+        _conversationsSub?.cancel();
+        for (final sub in _messageSubs.values) {
+          sub?.cancel();
+        }
+        _messageSubs.clear();
+        _messagesMap.clear();
+        _conversations = [];
+        _conversationsController.add([]);
+        persistence.saveConversations([]);
+      }
+    });
+
+    // 2. If already logged in on startup, start listening immediately
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      _activeListeningUid = currentUser.uid;
+      _initConversationsListener(currentUser.uid);
+    } else {
+      _conversations = [];
       Future.microtask(() {
-        _conversationsController.add(List.unmodifiable(_conversations));
+        _conversationsController.add([]);
       });
     }
-
-    // 2. Start listening to Firestore conversations
-    _initConversationsListener();
   }
 
-  String get _currentUserId => persistence.getSavedUser()?.id ?? 'usr_me';
-  String get _currentUserName => persistence.getSavedUser()?.name ?? 'You';
+  String get _currentUserId {
+    final fbUid = FirebaseAuth.instance.currentUser?.uid;
+    if (fbUid != null && fbUid.isNotEmpty) return fbUid;
+    return persistence.getSavedUser()?.id ?? '';
+  }
 
-  void _initConversationsListener() {
-    final uid = _currentUserId;
+  String get _currentUserName {
+    final fbUser = FirebaseAuth.instance.currentUser;
+    if (fbUser != null && fbUser.displayName != null && fbUser.displayName!.isNotEmpty) {
+      return fbUser.displayName!;
+    }
+    return persistence.getSavedUser()?.name ?? 'User';
+  }
+
+  void _initConversationsListener(String uid) {
     _conversationsSub?.cancel();
+    if (uid.isEmpty) {
+      _conversations = [];
+      _conversationsController.add([]);
+      return;
+    }
 
     _conversationsSub = _firestore
         .collection('conversations')
         .where('participantIds', arrayContains: uid)
         .snapshots()
         .listen((snapshot) {
-      final convs = snapshot.docs.map((doc) => _parseConversation(doc)).toList();
+      final convs = snapshot.docs.map((doc) => _parseConversation(doc, uid)).toList();
 
       // Sort: pinned first, then by updatedAt descending
       convs.sort((a, b) {
@@ -60,7 +100,11 @@ class FirestoreChatService implements ChatService {
       _conversations = convs;
       _conversationsController.add(List.unmodifiable(_conversations));
       persistence.saveConversations(_conversations);
-    }, onError: (_) {});
+    }, onError: (e) {
+      if (kDebugMode) {
+        print('Firestore conversations listener error: $e');
+      }
+    });
   }
 
   @override
@@ -112,9 +156,9 @@ class FirestoreChatService implements ChatService {
 
   @override
   Future<List<ContactModel>> getContacts() async {
+    final currentUserId = _currentUserId;
     try {
       final snapshot = await _firestore.collection('users').get();
-      final currentUserId = _currentUserId;
 
       if (snapshot.docs.isNotEmpty) {
         final list = snapshot.docs
@@ -140,37 +184,15 @@ class FirestoreChatService implements ChatService {
           );
         }).toList();
 
-        if (list.isNotEmpty) return list;
+        return list;
       }
-    } catch (_) {}
-
-    // Seed initial mock contacts to Firestore if collection is empty
-    await _seedDefaultContacts();
-    return ContactModel.mockContacts.where((c) => c.id != _currentUserId).toList();
-  }
-
-  /// Seeds default NexaTalk contacts to Firestore on initial installation.
-  Future<void> _seedDefaultContacts() async {
-    try {
-      final batch = _firestore.batch();
-      for (final contact in ContactModel.mockContacts) {
-        final userRef = _firestore.collection('users').doc(contact.id);
-        batch.set(userRef, {
-          'id': contact.id,
-          'name': contact.name,
-          'displayName': contact.name,
-          'email': contact.email,
-          'phone': contact.phone,
-          'username': contact.name.toLowerCase().replaceAll(' ', '_'),
-          'status': contact.status,
-          'bio': 'Available on NexaTalk ✨',
-          'isOnline': contact.isOnline,
-          'lastActive': FieldValue.serverTimestamp(),
-          'createdAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
+    } catch (e) {
+      if (kDebugMode) {
+        print('Firestore getContacts error: $e');
       }
-      await batch.commit();
-    } catch (_) {}
+    }
+
+    return [];
   }
 
   @override
@@ -537,9 +559,9 @@ class FirestoreChatService implements ChatService {
     }
   }
 
-  ConversationModel _parseConversation(DocumentSnapshot<Map<String, dynamic>> doc) {
+  ConversationModel _parseConversation(DocumentSnapshot<Map<String, dynamic>> doc, [String? currentUid]) {
     final data = doc.data() ?? {};
-    final currentUserId = _currentUserId;
+    final currentUserId = (currentUid != null && currentUid.isNotEmpty) ? currentUid : _currentUserId;
 
     // Determine other participant
     final participantMap = (data['participantMap'] as Map<String, dynamic>?) ?? {};
@@ -657,9 +679,9 @@ class FirestoreChatService implements ChatService {
     final cleanQuery = query.trim().toLowerCase();
     if (cleanQuery.isEmpty) return getContacts();
 
+    final currentUserId = _currentUserId;
     try {
-      final snapshot = await _firestore.collection('users').limit(25).get();
-      final currentUserId = _currentUserId;
+      final snapshot = await _firestore.collection('users').limit(50).get();
 
       return snapshot.docs
           .where((doc) => doc.id != currentUserId)
@@ -686,17 +708,16 @@ class FirestoreChatService implements ChatService {
               contact.roleOrTag.toLowerCase().contains(cleanQuery) ||
               contact.email.toLowerCase().contains(cleanQuery))
           .toList();
-    } catch (_) {
-      final contacts = await getContacts();
-      return contacts
-          .where((c) =>
-              c.name.toLowerCase().contains(cleanQuery) ||
-              c.roleOrTag.toLowerCase().contains(cleanQuery))
-          .toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Firestore searchUsers error: $e');
+      }
+      return [];
     }
   }
 
   void dispose() {
+    _authSub?.cancel();
     _conversationsSub?.cancel();
     for (final sub in _messageSubs.values) {
       sub?.cancel();

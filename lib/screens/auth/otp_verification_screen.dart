@@ -163,37 +163,39 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     final char = hasChar ? _otpCode[index] : '';
                     final isActive = index == _otpCode.length || (_otpCode.length == 6 && index == 5);
 
-                    return Container(
-                      width: 48,
-                      height: 54,
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isActive
-                              ? AppColors.primaryCyan
-                              : hasChar
-                                  ? AppColors.primaryCyan.withValues(alpha: 0.5)
-                                  : AppColors.surfaceBorder,
-                          width: isActive ? 1.8 : 1.2,
+                    return Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        height: 54,
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isActive
+                                ? AppColors.primaryCyan
+                                : hasChar
+                                    ? AppColors.primaryCyan.withValues(alpha: 0.5)
+                                    : AppColors.surfaceBorder,
+                            width: isActive ? 1.8 : 1.2,
+                          ),
+                          boxShadow: isActive
+                              ? [
+                                  BoxShadow(
+                                    color: AppColors.primaryCyan.withValues(alpha: 0.35),
+                                    blurRadius: 8,
+                                    spreadRadius: 1,
+                                  ),
+                                ]
+                              : null,
                         ),
-                        boxShadow: isActive
-                            ? [
-                                BoxShadow(
-                                  color: AppColors.primaryCyan.withValues(alpha: 0.35),
-                                  blurRadius: 8,
-                                  spreadRadius: 1,
-                                ),
-                              ]
-                            : null,
-                      ),
-                      child: Center(
-                        child: Text(
-                          char,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                        child: Center(
+                          child: Text(
+                            char,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
