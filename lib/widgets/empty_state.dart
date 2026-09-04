@@ -76,7 +76,7 @@ class EmptyState extends StatelessWidget {
               PrimaryButton(
                 text: actionText!,
                 onPressed: onAction,
-                width: 180,
+                width: 220,
                 height: 46,
               ),
             ],

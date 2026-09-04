@@ -79,7 +79,7 @@ class AppStrings {
   // Contacts
   static const String newConversation = 'New Conversation';
   static const String searchContacts = 'Search contacts';
-  static const String startChat = 'Start Chat';
+  static const String startChat = 'Start a new chat';
 
   // Profile
   static const String editProfile = 'Edit Profile';

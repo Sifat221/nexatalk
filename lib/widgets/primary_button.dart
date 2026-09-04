@@ -78,12 +78,16 @@ class _PrimaryButtonState extends State<PrimaryButton> with SingleTickerProvider
                           ),
                           const SizedBox(width: 8),
                         ],
-                        Text(
-                          widget.text,
-                          style: AppTypography.labelLarge.copyWith(
-                            color: isDisabled ? AppColors.textTertiary : AppColors.textOnPrimary,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
+                        Flexible(
+                          child: Text(
+                            widget.text,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.labelLarge.copyWith(
+                              color: isDisabled ? AppColors.textTertiary : AppColors.textOnPrimary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15,
+                            ),
                           ),
                         ),
                       ],

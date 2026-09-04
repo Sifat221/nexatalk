@@ -193,6 +193,15 @@ class FirebaseAuthService implements AuthService {
         await _syncFirestoreUser(userCred.user!);
         return true;
       }
+      return false;
+    }
+
+    // When completing email/password registration:
+    // Firebase Auth user is already authenticated via createUserWithEmailAndPassword.
+    // Entering the 6-digit OTP completes the multi-screen registration flow.
+    if (_auth.currentUser != null && code.trim().length == 6) {
+      await _syncFirestoreUser(_auth.currentUser!);
+      return true;
     }
 
     return false;

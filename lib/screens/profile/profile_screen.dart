@@ -25,7 +25,7 @@ class ProfileScreen extends StatelessWidget {
 
     final nameController = TextEditingController(text: user.name);
     final bioController = TextEditingController(text: user.bio);
-    final phoneController = TextEditingController(text: user.phone ?? '+1 (555) 019-2834');
+    final phoneController = TextEditingController(text: user.phone ?? '');
 
     showModalBottomSheet(
       context: context,
