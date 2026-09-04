@@ -159,12 +159,10 @@ class MockAuthService implements AuthService {
   }
 
   String _guessNameFromEmail(String email) {
-    if (email.contains('alex')) return 'Alex Morgan';
-    if (email.contains('maya')) return 'Maya Chen';
-    if (email.contains('ryan')) return 'Ryan Lee';
     final raw = email.split('@').first;
     final parts = raw.split(RegExp(r'[._-]'));
-    return parts.map((p) => p.isEmpty ? '' : '${p[0].toUpperCase()}${p.substring(1)}').join(' ');
+    final formatted = parts.where((p) => p.isNotEmpty).map((p) => '${p[0].toUpperCase()}${p.substring(1)}').join(' ');
+    return formatted.isNotEmpty ? formatted : 'User';
   }
 
   void dispose() {

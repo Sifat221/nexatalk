@@ -71,14 +71,26 @@ class PersistenceService {
     if (raw == null) return null;
     try {
       final list = jsonDecode(raw) as List<dynamic>;
-      return list.map((e) => ConversationModel.fromJson(e as Map<String, dynamic>)).toList();
+      final convs = list.map((e) => ConversationModel.fromJson(e as Map<String, dynamic>)).toList();
+      return convs.where((c) =>
+        !c.participant.id.startsWith('contact_') &&
+        c.participant.id != 'contact_maya' &&
+        c.participant.name != 'Maya Chen' &&
+        c.participant.email != 'maya.chen@nexatalk.app'
+      ).toList();
     } catch (_) {
       return null;
     }
   }
 
   Future<void> saveConversations(List<ConversationModel> conversations) async {
-    final raw = jsonEncode(conversations.map((c) => c.toJson()).toList());
+    final clean = conversations.where((c) =>
+      !c.participant.id.startsWith('contact_') &&
+      c.participant.id != 'contact_maya' &&
+      c.participant.name != 'Maya Chen' &&
+      c.participant.email != 'maya.chen@nexatalk.app'
+    ).toList();
+    final raw = jsonEncode(clean.map((c) => c.toJson()).toList());
     await _prefs.setString(_keyConversations, raw);
   }
 
@@ -104,6 +116,40 @@ class PersistenceService {
     await _prefs.remove(_keyAuthUser);
     await _prefs.remove(_keyConversations);
     await clearTokens();
+  }
+
+  Future<void> cleanLegacyDemoState() async {
+    final savedUser = getSavedUser();
+    if (savedUser != null &&
+        (savedUser.email == 'alex.morgan@nexatalk.app' ||
+         savedUser.email == 'maya.chen@nexatalk.app' ||
+         savedUser.id.startsWith('contact_') ||
+         savedUser.name == 'Alex Morgan' ||
+         savedUser.name == 'Maya Chen')) {
+      await _prefs.remove(_keyAuthUser);
+    }
+
+    final raw = _prefs.getString(_keyConversations);
+    if (raw != null) {
+      try {
+        final list = jsonDecode(raw) as List<dynamic>;
+        final convs = list.map((e) => ConversationModel.fromJson(e as Map<String, dynamic>)).toList();
+        final clean = convs.where((c) =>
+          !c.participant.id.startsWith('contact_') &&
+          c.participant.id != 'contact_maya' &&
+          c.participant.name != 'Maya Chen' &&
+          c.participant.email != 'maya.chen@nexatalk.app'
+        ).toList();
+
+        if (clean.isEmpty) {
+          await _prefs.remove(_keyConversations);
+        } else if (clean.length != convs.length) {
+          await saveConversations(clean);
+        }
+      } catch (_) {
+        await _prefs.remove(_keyConversations);
+      }
+    }
   }
 
   Future<void> clearAll() async {

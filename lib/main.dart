@@ -36,6 +36,7 @@ void main() async {
 
   // 2. Initialize Local Persistence
   final persistenceService = await PersistenceService.init();
+  await persistenceService.cleanLegacyDemoState();
 
   // 3. Instantiate Real Firebase Services (with graceful fallback)
   final AuthService authService = isFirebaseInitialized

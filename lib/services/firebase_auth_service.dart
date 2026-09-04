@@ -242,8 +242,11 @@ class FirebaseAuthService implements AuthService {
     return _syncFirestoreUser(userCred.user!);
   }
 
-  /// One-click Demo Login for effortless onboarding & testing.
+  /// One-click Demo Login strictly isolated to local debug mode.
   Future<UserModel> demoLogin(String role) async {
+    if (!kDebugMode) {
+      throw UnsupportedError('Demo login is strictly disabled in production.');
+    }
     final email = role == 'secondary'
         ? 'maya.chen@nexatalk.app'
         : 'alex.morgan@nexatalk.app';

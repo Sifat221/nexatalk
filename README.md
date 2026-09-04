@@ -52,7 +52,7 @@ NexaTalk connects Flutter clients (Android, iOS, Web, Desktop) directly to Fireb
 * **Session Persistence**: Persistent local auth tokens backed by `SharedPreferences`.
 * **Password Reset**: Automated password reset emails delivered via Firebase Auth.
 * **Friendly Error Handling**: Maps Firebase error codes (`invalid-credential`, `email-already-in-use`, `weak-password`, `too-many-requests`) into user-friendly notifications.
-* **One-Tap Demo Login**: Instant test authentication for local development and review.
+* **One-Tap Demo Login**: Development-only test authentication (strictly disabled in release/production to guarantee live user data isolation).
 * **Phone & Google Sign-In Status**: Code interfaces are implemented in `lib/services/firebase_auth_service.dart`. Google Sign-In and Phone OTP require valid SHA-1 certificate fingerprints added in the Firebase Console (the Android client includes the generated OAuth client configuration).
 
 ### 💬 Real-Time Messaging

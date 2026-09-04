@@ -88,7 +88,10 @@ class FirestoreChatService implements ChatService {
         .where('participantIds', arrayContains: uid)
         .snapshots()
         .listen((snapshot) {
-      final convs = snapshot.docs.map((doc) => _parseConversation(doc, uid)).toList();
+      final convs = snapshot.docs
+          .map((doc) => _parseConversation(doc, uid))
+          .where((conv) => !_isLegacyDemoConversation(conv))
+          .toList();
 
       // Sort: pinned first, then by updatedAt descending
       convs.sort((a, b) {
@@ -105,6 +108,18 @@ class FirestoreChatService implements ChatService {
         print('Firestore conversations listener error: $e');
       }
     });
+  }
+
+  bool _isLegacyDemoConversation(ConversationModel conv) {
+    final p = conv.participant;
+    if (p.id.startsWith('contact_')) return true;
+    if (p.id == 'contact_maya' || p.name == 'Maya Chen' || p.email == 'maya.chen@nexatalk.app') {
+      return true;
+    }
+    if (p.name == 'Alex Morgan' && p.email == 'alex.morgan@nexatalk.app' && p.id.startsWith('contact_')) {
+      return true;
+    }
+    return false;
   }
 
   @override
@@ -162,7 +177,11 @@ class FirestoreChatService implements ChatService {
 
       if (snapshot.docs.isNotEmpty) {
         final list = snapshot.docs
-            .where((doc) => doc.id != currentUserId)
+            .where((doc) =>
+                doc.id != currentUserId &&
+                !doc.id.startsWith('contact_') &&
+                doc.data()['email'] != 'maya.chen@nexatalk.app' &&
+                doc.data()['name'] != 'Maya Chen')
             .map((doc) {
           final data = doc.data();
           final displayName = data['displayName'] ?? data['name'] ?? 'User';
@@ -684,7 +703,11 @@ class FirestoreChatService implements ChatService {
       final snapshot = await _firestore.collection('users').limit(50).get();
 
       return snapshot.docs
-          .where((doc) => doc.id != currentUserId)
+          .where((doc) =>
+              doc.id != currentUserId &&
+              !doc.id.startsWith('contact_') &&
+              doc.data()['email'] != 'maya.chen@nexatalk.app' &&
+              doc.data()['name'] != 'Maya Chen')
           .map((doc) {
             final data = doc.data();
             final displayName = data['displayName'] ?? data['name'] ?? 'User';
