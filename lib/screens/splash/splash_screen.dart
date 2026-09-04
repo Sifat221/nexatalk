@@ -140,22 +140,47 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               ),
             ),
           ),
-          // Subtle bottom loading pulse
+          // 3 subtle carousel indicator dots matching reference Screen 1
           Positioned(
-            bottom: 40,
+            bottom: 44,
             left: 0,
             right: 0,
-            child: Center(
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    AppColors.primaryCyan.withValues(alpha: 0.7),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 18,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryCyan,
+                    borderRadius: BorderRadius.circular(3),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primaryCyan.withValues(alpha: 0.5),
+                        blurRadius: 6,
+                      ),
+                    ],
                   ),
                 ),
-              ),
+                const SizedBox(width: 6),
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1D3546),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1D3546),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

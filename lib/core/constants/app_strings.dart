@@ -40,24 +40,25 @@ class AppStrings {
   static const String signUp = 'Sign Up';
 
   // Auth - Sign Up
-  static const String createAccount = 'Create your account';
-  static const String signUpSubtitle = "Let's get you started.";
+  static const String createAccount = 'Create account';
+  static const String signUpSubtitle = "Let's get you started";
   static const String fullName = 'Full Name';
   static const String confirmPassword = 'Confirm Password';
   static const String alreadyHaveAccount = 'Already have an account?';
 
   // Auth - OTP
-  static const String verifyNumber = 'Verify your account';
-  static const String verifyOtpSubtitle = 'Enter the 6-digit verification code sent to your email or phone.';
+  static const String verifyNumber = 'Verify your number';
+  static const String verifyOtpSubtitle = 'Enter the 6-digit code we sent to\n+880 1234-567890';
   static const String resendCode = 'Resend code';
   static const String verify = 'Verify';
 
   // Auth - Forgot Password
   static const String forgotPasswordTitle = 'Forgot password?';
-  static const String forgotPasswordSubtitle = "Enter your email and we'll send you a reset link.";
+  static const String forgotPasswordSubtitle = "Enter your email and we'll send\nyou a link to reset your password.";
   static const String sendResetLink = 'Send Reset Link';
   static const String resetLinkSentTitle = 'Reset link sent';
   static const String resetLinkSentDesc = 'Check your inbox to continue resetting your password.';
+  static const String rememberPassword = 'Remember your password?';
   static const String backToSignIn = 'Back to Sign In';
 
   // Home & Chats

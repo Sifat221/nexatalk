@@ -54,6 +54,5 @@ void main() {
     expect(find.text(AppStrings.chatsTab), findsOneWidget);
     expect(find.text(AppStrings.contactsTab), findsOneWidget);
     expect(find.text(AppStrings.profileTab), findsOneWidget);
-    expect(find.text(AppStrings.settingsTab), findsOneWidget);
   });
 }

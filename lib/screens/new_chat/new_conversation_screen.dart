@@ -6,33 +6,61 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radius.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/constants/app_typography.dart';
+import '../../models/contact_model.dart';
 import '../../widgets/custom_avatar.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/primary_button.dart';
 import '../../widgets/responsive_shell.dart';
 import '../../widgets/search_field.dart';
-import '../../models/contact_model.dart';
 import '../chat/chat_screen.dart';
 
-/// Screen 8 — New Conversation / Contact Picker.
-class NewConversationScreen extends StatelessWidget {
+/// Screen 8 — New Conversation / Contact Picker matching reference layout.
+class NewConversationScreen extends StatefulWidget {
   const NewConversationScreen({super.key});
+
+  @override
+  State<NewConversationScreen> createState() => _NewConversationScreenState();
+}
+
+class _NewConversationScreenState extends State<NewConversationScreen> {
+  String? _selectedContactId;
+
+  Future<void> _startChatWith(ContactModel contact) async {
+    final chatCtrl = context.read<ChatController>();
+    final conv = await chatCtrl.startChatWithContact(contact);
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ChatScreen(conversation: conv)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final contactsCtrl = context.watch<ContactsController>();
-    final chatCtrl = context.read<ChatController>();
     final contacts = contactsCtrl.contacts;
+
+    // Auto-select first contact if none selected
+    if (_selectedContactId == null && contacts.isNotEmpty) {
+      _selectedContactId = contacts.first.id;
+    }
+
+    final selectedContact = contacts.cast<ContactModel?>().firstWhere(
+      (c) => c?.id == _selectedContactId,
+      orElse: () => contacts.isNotEmpty ? contacts.first : null,
+    );
 
     return ResponsiveShell(
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
           title: const Text(
             AppStrings.newConversation,
             style: AppTypography.titleLarge,
           ),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Colors.white),
             onPressed: () => Navigator.of(context).pop(),
           ),
           actions: [
@@ -47,7 +75,7 @@ class NewConversationScreen extends StatelessWidget {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 child: SearchField(
                   hintText: AppStrings.searchContacts,
                   onChanged: (q) => contactsCtrl.setSearchQuery(q),
@@ -65,22 +93,19 @@ class NewConversationScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         itemCount: contacts.length,
                         separatorBuilder: (_, _) => Divider(
-                          color: AppColors.divider.withValues(alpha: 0.06),
+                          color: AppColors.surfaceBorder.withValues(alpha: 0.3),
                           indent: 72,
+                          height: 1,
                         ),
                         itemBuilder: (context, index) {
                           final contact = contacts[index];
+                          final isSelected = _selectedContactId == contact.id;
+
                           return ListTile(
-                            onTap: () async {
-                              final conv = await chatCtrl.startChatWithContact(contact);
-                              if (!context.mounted) return;
-                              Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                  builder: (_) => ChatScreen(conversation: conv),
-                                ),
-                              );
+                            onTap: () {
+                              setState(() => _selectedContactId = contact.id);
                             },
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                             leading: CustomAvatar(
                               name: contact.name,
                               radius: 24,
@@ -92,6 +117,7 @@ class NewConversationScreen extends StatelessWidget {
                               contact.name,
                               style: AppTypography.titleMedium.copyWith(
                                 fontWeight: FontWeight.w600,
+                                color: Colors.white,
                               ),
                             ),
                             subtitle: Text(
@@ -102,27 +128,55 @@ class NewConversationScreen extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            trailing: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            trailing: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              width: 24,
+                              height: 24,
                               decoration: BoxDecoration(
-                                color: AppColors.surfaceHighlight.withValues(alpha: 0.6),
-                                borderRadius: AppRadius.roundedFull,
-                                border: Border.all(
-                                  color: AppColors.surfaceBorder.withValues(alpha: 0.5),
-                                ),
+                                shape: BoxShape.circle,
+                                gradient: isSelected ? AppColors.primaryGradient : null,
+                                border: isSelected
+                                    ? null
+                                    : Border.all(
+                                        color: const Color(0xFF1E3A4C),
+                                        width: 1.5,
+                                      ),
                               ),
-                              child: Text(
-                                contact.roleOrTag,
-                                style: const TextStyle(
-                                  fontSize: 10.5,
-                                  color: AppColors.primaryLight,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                              child: isSelected
+                                  ? const Icon(
+                                      Icons.check_rounded,
+                                      size: 16,
+                                      color: Colors.white,
+                                    )
+                                  : null,
                             ),
                           );
                         },
                       ),
+              ),
+
+              // Bottom "Start Chat" Action Button
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  border: Border(
+                    top: BorderSide(
+                      color: AppColors.surfaceBorder.withValues(alpha: 0.4),
+                      width: 1,
+                    ),
+                  ),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: PrimaryButton(
+                    text: AppStrings.startChat,
+                    height: 52,
+                    onPressed: selectedContact != null
+                        ? () => _startChatWith(selectedContact)
+                        : null,
+                  ),
+                ),
               ),
             ],
           ),
@@ -217,7 +271,7 @@ class NewConversationScreen extends StatelessWidget {
                       participants: selectedContacts,
                     );
                     if (context.mounted) {
-                      Navigator.of(context).pushReplacement(
+                      Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => ChatScreen(conversation: groupConv),
                         ),

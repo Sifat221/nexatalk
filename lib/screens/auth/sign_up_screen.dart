@@ -3,14 +3,14 @@ import 'package:provider/provider.dart';
 import '../../controllers/auth_controller.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
-import '../../core/constants/app_typography.dart';
 import '../../core/utils/validators.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/responsive_shell.dart';
 import 'otp_verification_screen.dart';
+import 'sign_in_screen.dart';
 
-/// Screen 4 — Sign Up / Registration.
+/// Screen 4 — Create Account / Sign Up matching reference screen layout.
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
@@ -63,9 +63,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Colors.white),
+            onPressed: () {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const SignInScreen()),
+                );
+              }
+            },
           ),
         ),
         body: SafeArea(
@@ -76,17 +86,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const SizedBox(height: 8),
+                  // Heading: Create account
+                  const Text(
                     AppStrings.createAccount,
-                    style: AppTypography.displayMedium.copyWith(
+                    style: TextStyle(
+                      fontSize: 26,
                       fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: -0.4,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
+                  const SizedBox(height: 6),
+                  const Text(
                     AppStrings.signUpSubtitle,
-                    style: AppTypography.bodyLarge.copyWith(
-                      color: AppColors.textSecondary,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF8E9FA8),
                     ),
                   ),
                   const SizedBox(height: 28),
@@ -115,40 +132,37 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(height: 18),
                   ],
 
-                  // Full Name
+                  // Full Name Field (Reference hint: Ali Hasan)
                   CustomTextField(
                     controller: _nameController,
                     labelText: AppStrings.fullName,
-                    hintText: 'Alex Morgan',
-                    prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColors.textTertiary, size: 20),
+                    hintText: 'Ali Hasan',
                     validator: Validators.validateName,
                   ),
                   const SizedBox(height: 18),
 
-                  // Email
+                  // Email Field
                   CustomTextField(
                     controller: _emailController,
                     labelText: AppStrings.email,
-                    hintText: 'alex.morgan@nexatalk.app',
+                    hintText: 'example@email.com',
                     keyboardType: TextInputType.emailAddress,
-                    prefixIcon: const Icon(Icons.mail_outline_rounded, color: AppColors.textTertiary, size: 20),
                     validator: Validators.validateEmail,
                   ),
                   const SizedBox(height: 18),
 
-                  // Password
+                  // Password Field
                   CustomTextField(
                     controller: _passwordController,
                     labelText: AppStrings.password,
-                    hintText: '••••••••',
+                    hintText: '••••••••••••',
                     obscureText: !auth.isPasswordVisible,
-                    prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.textTertiary, size: 20),
                     suffixIcon: IconButton(
                       icon: Icon(
                         auth.isPasswordVisible
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
-                        color: AppColors.textTertiary,
+                        color: const Color(0xFF5A7285),
                         size: 20,
                       ),
                       onPressed: auth.togglePasswordVisibility,
@@ -157,19 +171,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   const SizedBox(height: 18),
 
-                  // Confirm Password
+                  // Confirm Password Field
                   CustomTextField(
                     controller: _confirmPasswordController,
                     labelText: AppStrings.confirmPassword,
-                    hintText: '••••••••',
+                    hintText: '••••••••••••',
                     obscureText: !auth.isConfirmPasswordVisible,
-                    prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.textTertiary, size: 20),
                     suffixIcon: IconButton(
                       icon: Icon(
                         auth.isConfirmPasswordVisible
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
-                        color: AppColors.textTertiary,
+                        color: const Color(0xFF5A7285),
                         size: 20,
                       ),
                       onPressed: auth.toggleConfirmPasswordVisibility,
@@ -178,31 +191,41 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   const SizedBox(height: 28),
 
-                  // Sign Up Action
+                  // Primary Sign Up Button
                   PrimaryButton(
                     text: AppStrings.signUp,
                     onPressed: _handleSignUp,
                     isLoading: auth.isLoading,
-                    icon: Icons.arrow_forward_rounded,
+                    height: 52,
                   ),
                   const SizedBox(height: 28),
 
-                  // Footer
+                  // Footer: Already have an account? Sign In
                   Center(
                     child: Wrap(
                       alignment: WrapAlignment.center,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Text(
+                        const Text(
                           AppStrings.alreadyHaveAccount,
-                          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+                          style: TextStyle(color: Color(0xFF8E9FA8), fontSize: 14),
                         ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: Text(
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: () {
+                            if (Navigator.of(context).canPop()) {
+                              Navigator.of(context).pop();
+                            } else {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(builder: (_) => const SignInScreen()),
+                              );
+                            }
+                          },
+                          child: const Text(
                             AppStrings.signIn,
-                            style: AppTypography.labelLarge.copyWith(
+                            style: TextStyle(
                               color: AppColors.primaryCyan,
+                              fontSize: 14,
                               fontWeight: FontWeight.w700,
                             ),
                           ),

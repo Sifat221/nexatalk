@@ -16,7 +16,6 @@ import '../../widgets/search_field.dart';
 import '../chat/chat_screen.dart';
 import '../new_chat/new_conversation_screen.dart';
 import '../profile/profile_screen.dart';
-import '../settings/settings_screen.dart';
 
 /// Screen 7 — Home Screen containing the Chats List, Online Tray, and Bottom Navigation.
 class HomeScreen extends StatefulWidget {
@@ -28,7 +27,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedTabIndex = 0;
-  bool _isSearchExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -48,24 +46,33 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildChatsTab(),
           const _ContactsTab(),
           const ProfileScreen(),
-          const SettingsScreen(),
         ],
       ),
       bottomNavigationBar: _buildBottomNav(),
       floatingActionButton: _selectedTabIndex == 0
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const NewConversationScreen()),
-                );
-              },
-              backgroundColor: AppColors.primaryCyan,
-              foregroundColor: AppColors.textOnPrimary,
-              elevation: 6,
-              icon: const Icon(Icons.add_comment_rounded, size: 20),
-              label: const Text(
-                AppStrings.newChat,
-                style: TextStyle(fontWeight: FontWeight.w700),
+          ? Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryCyan.withValues(alpha: 0.4),
+                    blurRadius: 14,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: FloatingActionButton(
+                shape: const CircleBorder(),
+                backgroundColor: AppColors.primaryCyan,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const NewConversationScreen()),
+                  );
+                },
+                child: const Icon(Icons.edit_rounded, size: 24, color: Colors.white),
               ),
             )
           : null,
@@ -91,22 +98,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   children: [
                     const AppLogo(
-                      size: 38,
+                      size: 34,
                       showText: false,
                       showTagline: false,
                       isAnimated: false,
                     ),
-                    const SizedBox(width: 12),
-                    ShaderMask(
-                      shaderCallback: (bounds) => AppColors.primaryGradient.createShader(bounds),
-                      child: const Text(
-                        AppStrings.appName,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
-                          color: Colors.white,
-                        ),
+                    const SizedBox(width: 10),
+                    const Text(
+                      AppStrings.appName,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.4,
+                        color: Colors.white,
                       ),
                     ),
                   ],
@@ -114,24 +118,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   children: [
                     IconButton(
-                      icon: Icon(
-                        _isSearchExpanded ? Icons.close_rounded : Icons.search_rounded,
-                        color: AppColors.textPrimary,
+                      icon: const Icon(
+                        Icons.search_rounded,
+                        color: Colors.white,
                         size: 22,
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _isSearchExpanded = !_isSearchExpanded;
-                          if (!_isSearchExpanded) {
-                            chatCtrl.clearSearch();
-                          }
-                        });
-                      },
+                      onPressed: () {},
                     ),
                     const SizedBox(width: 4),
                     CustomAvatar(
-                      name: authCtrl.currentUser?.name ?? 'Alex Morgan',
-                      radius: 18,
+                      name: authCtrl.currentUser?.name ?? 'Nahid Hasan',
+                      radius: 17,
                       isOnline: true,
                       showOnlineIndicator: true,
                       onTap: () => setState(() => _selectedTabIndex = 2),
@@ -142,19 +139,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Search Field
-          if (_isSearchExpanded)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-              child: SearchField(
-                hintText: AppStrings.searchConversations,
-                onChanged: (q) => chatCtrl.setSearchQuery(q),
-                onClear: () => chatCtrl.clearSearch(),
-              ),
+          // Search Field matching reference Screen 7
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+            child: SearchField(
+              hintText: AppStrings.searchConversations,
+              onChanged: (q) => chatCtrl.setSearchQuery(q),
+              onClear: () => chatCtrl.clearSearch(),
             ),
+          ),
 
           // Online Contacts Tray (Horizontal Row)
-          if (onlineContacts.isNotEmpty && !_isSearchExpanded) ...[
+          if (onlineContacts.isNotEmpty) ...[
             SizedBox(
               height: 94,
               child: ListView.builder(
@@ -179,8 +175,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
+                            padding: const EdgeInsets.all(2.5),
+                            decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: AppColors.primaryGradient,
                             ),
@@ -188,19 +184,20 @@ class _HomeScreenState extends State<HomeScreen> {
                               name: contact.name,
                               radius: 24,
                               isOnline: true,
-                              showOnlineIndicator: true,
+                              showOnlineIndicator: false,
                               gradientIndex: contact.avatarGradientIndex,
                             ),
                           ),
                           const SizedBox(height: 6),
                           SizedBox(
-                            width: 60,
+                            width: 64,
                             child: Text(
-                              contact.name.split(' ').first,
+                              contact.name,
                               textAlign: TextAlign.center,
-                              style: AppTypography.labelSmall.copyWith(
+                              style: const TextStyle(
+                                fontSize: 11,
                                 color: AppColors.textPrimary,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w500,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -213,7 +210,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            const Divider(height: 1),
           ],
 
           // Chat List View
@@ -318,45 +314,94 @@ class _HomeScreenState extends State<HomeScreen> {
           top: BorderSide(color: AppColors.surfaceBorder.withValues(alpha: 0.5), width: 1),
         ),
       ),
-      child: NavigationBar(
-        selectedIndex: _selectedTabIndex,
-        onDestinationSelected: (index) => setState(() => _selectedTabIndex = index),
-        backgroundColor: Colors.transparent,
-        indicatorColor: AppColors.primaryCyan.withValues(alpha: 0.18),
-        destinations: [
-          NavigationDestination(
-            icon: Badge(
-              isLabelVisible: unread > 0,
-              label: Text('$unread'),
-              backgroundColor: AppColors.primaryCyan,
-              textColor: AppColors.textOnPrimary,
-              child: const Icon(Icons.chat_bubble_outline_rounded),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 64,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildBottomNavItem(
+                index: 0,
+                icon: Icons.chat_bubble_outline_rounded,
+                activeIcon: Icons.chat_bubble_rounded,
+                label: AppStrings.chatsTab,
+                badgeCount: unread,
+              ),
+              _buildBottomNavItem(
+                index: 1,
+                icon: Icons.people_outline_rounded,
+                activeIcon: Icons.people_rounded,
+                label: AppStrings.contactsTab,
+              ),
+              _buildBottomNavItem(
+                index: 2,
+                icon: Icons.person_outline_rounded,
+                activeIcon: Icons.person_rounded,
+                label: AppStrings.profileTab,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomNavItem({
+    required int index,
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    int badgeCount = 0,
+  }) {
+    final isSelected = _selectedTabIndex == index;
+    final color = isSelected ? AppColors.primaryCyan : const Color(0xFF5A7285);
+
+    Widget iconWidget = Icon(
+      isSelected ? activeIcon : icon,
+      color: color,
+      size: 24,
+    );
+
+    if (badgeCount > 0) {
+      iconWidget = Badge(
+        label: Text('$badgeCount'),
+        backgroundColor: AppColors.primaryCyan,
+        textColor: Colors.white,
+        child: iconWidget,
+      );
+    }
+
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _selectedTabIndex = index),
+        splashColor: AppColors.primaryCyan.withValues(alpha: 0.1),
+        highlightColor: Colors.transparent,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColors.primaryCyan.withValues(alpha: 0.12)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: iconWidget,
             ),
-            selectedIcon: Badge(
-              isLabelVisible: unread > 0,
-              label: Text('$unread'),
-              backgroundColor: AppColors.primaryCyan,
-              textColor: AppColors.textOnPrimary,
-              child: const Icon(Icons.chat_bubble_rounded, color: AppColors.primaryCyan),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: color,
+              ),
             ),
-            label: AppStrings.chatsTab,
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.people_outline_rounded),
-            selectedIcon: Icon(Icons.people_rounded, color: AppColors.primaryCyan),
-            label: AppStrings.contactsTab,
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded, color: AppColors.primaryCyan),
-            label: AppStrings.profileTab,
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings_rounded, color: AppColors.primaryCyan),
-            label: AppStrings.settingsTab,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_radius.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/constants/app_typography.dart';
 import '../../services/persistence_service.dart';
 import '../../widgets/custom_vector_illustrations.dart';
 import '../../widgets/primary_button.dart';
 import '../auth/sign_in_screen.dart';
+import '../auth/sign_up_screen.dart';
 
-/// Screen 2 — Polished Onboarding Carousel.
+/// Screen 2 — Onboarding matching reference screen layout.
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -23,19 +23,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<_OnboardingPageData> _pages = const [
     _OnboardingPageData(
-      title: AppStrings.onboardingTitle1,
-      description: AppStrings.onboardingDesc1,
+      welcomePrefix: 'Welcome to',
+      title: AppStrings.appName,
+      description: 'Simple, fast and secure\nmessaging for everyone.',
+      illustration: TwoPeopleChattingIllustration(size: 240),
+    ),
+    _OnboardingPageData(
+      welcomePrefix: 'Connect with',
+      title: 'Real-time Chat',
+      description: 'Instant message delivery, presence status,\nand live typing indicators.',
       illustration: OnboardingIllustration1(),
     ),
     _OnboardingPageData(
-      title: AppStrings.onboardingTitle2,
-      description: AppStrings.onboardingDesc2,
+      welcomePrefix: 'Safe & Secure',
+      title: 'Private & Direct',
+      description: 'Your chats, profiles, and data\nsynced effortlessly in real time.',
       illustration: OnboardingIllustration2(),
-    ),
-    _OnboardingPageData(
-      title: AppStrings.onboardingTitle3,
-      description: AppStrings.onboardingDesc3,
-      illustration: OnboardingIllustration3(),
     ),
   ];
 
@@ -45,91 +48,54 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  Future<void> _finishOnboarding() async {
+  Future<void> _navigateToSignUp() async {
+    final persistence = context.read<PersistenceService>();
+    await persistence.setOnboardingComplete(true);
+
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const SignUpScreen()),
+    );
+  }
+
+  Future<void> _navigateToSignIn() async {
     final persistence = context.read<PersistenceService>();
     await persistence.setOnboardingComplete(true);
 
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const SignInScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(1.0, 0.0),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
-            child: child,
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 350),
-      ),
+      MaterialPageRoute(builder: (_) => const SignInScreen()),
     );
-  }
-
-  void _nextPage() {
-    if (_currentPage < _pages.length - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeInOutCubic,
-      );
-    } else {
-      _finishOnboarding();
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isLastPage = _currentPage == _pages.length - 1;
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
-            // Top Bar: Skip Button
+            // Top Bar: Skip
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primaryCyan,
-                        ),
+                  TextButton(
+                    onPressed: _navigateToSignIn,
+                    child: Text(
+                      AppStrings.skip,
+                      style: AppTypography.labelMedium.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        AppStrings.appName.toUpperCase(),
-                        style: AppTypography.labelSmall.copyWith(
-                          color: AppColors.primaryLight,
-                          letterSpacing: 2.0,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                  if (!isLastPage)
-                    TextButton(
-                      onPressed: _finishOnboarding,
-                      child: Text(
-                        AppStrings.skip,
-                        style: AppTypography.labelLarge.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    )
-                  else
-                    const SizedBox(height: 48),
                 ],
               ),
             ),
 
-            // Page View
+            // Page View with Heading, Illustration, and Subtitle
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -137,33 +103,53 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 onPageChanged: (index) => setState(() => _currentPage = index),
                 itemBuilder: (context, index) {
                   final data = _pages[index];
-                  return Center(
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          data.illustration,
-                          const SizedBox(height: 24),
-                          Text(
-                            data.title,
-                            textAlign: TextAlign.center,
-                            style: AppTypography.headlineLarge.copyWith(
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.w800,
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Center(
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Heading: Welcome to \n NexaTalk
+                            Text(
+                              data.welcomePrefix,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFFE2E8F0),
+                                letterSpacing: -0.2,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            data.description,
-                            textAlign: TextAlign.center,
-                            style: AppTypography.bodyLarge.copyWith(
-                              color: AppColors.textSecondary,
-                              height: 1.45,
+                            const SizedBox(height: 4),
+                            Text(
+                              data.title,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: -0.5,
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 12),
+                            Text(
+                              data.description,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color: Color(0xFF8E9FA8),
+                                height: 1.45,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Centered Illustration
+                            data.illustration,
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -171,12 +157,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
 
-            // Bottom Navigation Controls
+            // Bottom Controls matching reference
             Padding(
-              padding: const EdgeInsets.all(28),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
               child: Column(
                 children: [
-                  // Smooth Indicator Dots
+                  // 3 Indicator Dots
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(_pages.length, (index) {
@@ -184,11 +170,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: isActive ? 24 : 8,
-                        height: 8,
+                        width: isActive ? 20 : 7,
+                        height: 7,
                         decoration: BoxDecoration(
-                          color: isActive ? AppColors.primaryCyan : AppColors.surfaceHighlight,
-                          borderRadius: AppRadius.roundedFull,
+                          color: isActive ? AppColors.primaryCyan : const Color(0xFF1D3546),
+                          borderRadius: BorderRadius.circular(4),
                           boxShadow: isActive
                               ? [
                                   BoxShadow(
@@ -202,10 +188,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     }),
                   ),
                   const SizedBox(height: 28),
+
+                  // Large Cyan "Get Started" CTA Button
                   PrimaryButton(
-                    text: isLastPage ? AppStrings.getStarted : AppStrings.next,
-                    onPressed: _nextPage,
-                    icon: isLastPage ? Icons.rocket_launch_rounded : Icons.arrow_forward_rounded,
+                    text: AppStrings.getStarted,
+                    onPressed: _navigateToSignUp,
+                    height: 52,
+                  ),
+                  const SizedBox(height: 14),
+
+                  // "I already have an account" Secondary Link
+                  TextButton(
+                    onPressed: _navigateToSignIn,
+                    child: const Text(
+                      'I already have an account',
+                      style: TextStyle(
+                        color: Color(0xFF8E9FA8),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -218,11 +220,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 }
 
 class _OnboardingPageData {
+  final String welcomePrefix;
   final String title;
   final String description;
   final Widget illustration;
 
   const _OnboardingPageData({
+    required this.welcomePrefix,
     required this.title,
     required this.description,
     required this.illustration,

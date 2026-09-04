@@ -212,6 +212,93 @@ class _MessageBubbleState extends State<MessageBubble> with SingleTickerProvider
   }
 
   Widget _buildAttachmentPreview(MessageModel msg) {
+    if (msg.attachmentType == AttachmentType.document) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.15), width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.22),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.insert_drive_file_rounded, color: Colors.white, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    msg.attachmentData ?? 'NexaTalk_Design.pdf',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    '2.4 MB • PDF',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (msg.attachmentType == AttachmentType.image) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 6),
+        width: 230,
+        height: 130,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF133446), Color(0xFF0D2533)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(color: AppColors.surfaceBorder, width: 1),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Styled stylized vector mountain preview if image fails or local
+            CustomPaint(
+              painter: _MountainPreviewPainter(),
+            ),
+            if (msg.attachmentData != null && msg.attachmentData!.startsWith('http'))
+              Image.network(
+                msg.attachmentData!,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => CustomPaint(painter: _MountainPreviewPainter()),
+              ),
+          ],
+        ),
+      );
+    }
+
     if (msg.attachmentType == AttachmentType.voiceNote) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -243,4 +330,64 @@ class _MessageBubbleState extends State<MessageBubble> with SingleTickerProvider
     }
     return const SizedBox.shrink();
   }
+}
+
+class _MountainPreviewPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    // Sky
+    final sky = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF0F3246), Color(0xFF1E526D), Color(0xFF38768C)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(0, 0, w, h));
+    canvas.drawRect(Rect.fromLTWH(0, 0, w, h), sky);
+
+    // Distant mountain
+    final m1 = Path()
+      ..moveTo(0, h * 0.75)
+      ..lineTo(w * 0.35, h * 0.25)
+      ..lineTo(w * 0.65, h * 0.65)
+      ..lineTo(w, h * 0.40)
+      ..lineTo(w, h)
+      ..lineTo(0, h)
+      ..close();
+    canvas.drawPath(m1, Paint()..color = const Color(0xFF153342));
+
+    // Foreground mountain
+    final m2 = Path()
+      ..moveTo(0, h * 0.60)
+      ..lineTo(w * 0.22, h * 0.35)
+      ..lineTo(w * 0.50, h * 0.70)
+      ..lineTo(w * 0.78, h * 0.30)
+      ..lineTo(w, h * 0.70)
+      ..lineTo(w, h)
+      ..lineTo(0, h)
+      ..close();
+    canvas.drawPath(m2, Paint()..color = const Color(0xFF0A1F29));
+
+    // Water lake
+    final lake = Path()
+      ..moveTo(0, h * 0.68)
+      ..lineTo(w, h * 0.68)
+      ..lineTo(w, h)
+      ..lineTo(0, h)
+      ..close();
+    canvas.drawPath(
+      lake,
+      Paint()
+        ..shader = const LinearGradient(
+          colors: [Color(0xFF09222E), Color(0xFF06151D)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ).createShader(Rect.fromLTWH(0, h * 0.68, w, h * 0.32)),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

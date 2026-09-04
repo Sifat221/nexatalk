@@ -27,13 +27,13 @@ void main() {
 
     test('Initial conversations load correctly', () {
       expect(chatController.conversations.isNotEmpty, true);
-      expect(chatController.conversations.any((c) => c.participant.name == 'Maya Chen'), true);
+      expect(chatController.conversations.any((c) => c.participant.name == 'Alif Hasan'), true);
     });
 
     test('Search filtering filters conversations by participant name', () {
-      chatController.setSearchQuery('Maya');
+      chatController.setSearchQuery('Alif');
       expect(chatController.conversations.length, 1);
-      expect(chatController.conversations.first.participant.name, 'Maya Chen');
+      expect(chatController.conversations.first.participant.name, 'Alif Hasan');
 
       chatController.clearSearch();
       expect(chatController.conversations.length, greaterThan(1));

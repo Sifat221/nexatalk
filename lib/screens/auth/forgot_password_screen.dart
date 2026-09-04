@@ -3,14 +3,14 @@ import 'package:provider/provider.dart';
 import '../../controllers/auth_controller.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
-import '../../core/constants/app_typography.dart';
 import '../../core/utils/validators.dart';
 import '../../widgets/custom_text_field.dart';
+import '../../widgets/custom_vector_illustrations.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/responsive_shell.dart';
-import '../../widgets/secondary_button.dart';
+import 'sign_in_screen.dart';
 
-/// Screen 6 — Forgot Password & Email Recovery.
+/// Screen 6 — Forgot Password matching reference screen layout.
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
@@ -37,6 +37,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     if (success && mounted) {
       setState(() => _isSent = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Password reset link sent to ${_emailController.text.trim()}! Check your inbox.'),
+          backgroundColor: AppColors.surfaceElevated,
+        ),
+      );
     }
   }
 
@@ -48,112 +54,139 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Colors.white),
+            onPressed: () {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const SignInScreen()),
+                );
+              }
+            },
           ),
         ),
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: _isSent ? _buildSuccessState() : _buildFormState(auth),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  // Heading: Forgot password?
+                  const Text(
+                    AppStrings.forgotPasswordTitle,
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: -0.4,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    AppStrings.forgotPasswordSubtitle,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF8E9FA8),
+                      height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  if (auth.errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppColors.errorBackground,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.error.withValues(alpha: 0.4)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 18),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              auth.errorMessage!,
+                              style: const TextStyle(color: AppColors.error, fontSize: 13),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                  ],
+
+                  // Email input field
+                  CustomTextField(
+                    controller: _emailController,
+                    labelText: AppStrings.email,
+                    hintText: 'example@email.com',
+                    keyboardType: TextInputType.emailAddress,
+                    validator: Validators.validateEmail,
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Large cyan button: Send Reset Link
+                  PrimaryButton(
+                    text: _isSent ? 'Link Sent ✓' : AppStrings.sendResetLink,
+                    onPressed: _handleSendReset,
+                    isLoading: auth.isLoading,
+                    height: 52,
+                  ),
+                  const SizedBox(height: 36),
+
+                  // Centered Envelope Vector Illustration (Screen 6 reference)
+                  const Center(
+                    child: ForgotEnvelopeIllustration(size: 190),
+                  ),
+                  const SizedBox(height: 36),
+
+                  // Bottom link: Remember your password? Sign in
+                  Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          AppStrings.rememberPassword,
+                          style: TextStyle(color: Color(0xFF8E9FA8), fontSize: 14),
+                        ),
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: () {
+                            if (Navigator.of(context).canPop()) {
+                              Navigator.of(context).pop();
+                            } else {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(builder: (_) => const SignInScreen()),
+                              );
+                            }
+                          },
+                          child: const Text(
+                            AppStrings.signIn,
+                            style: TextStyle(
+                              color: AppColors.primaryCyan,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildFormState(AuthController auth) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppStrings.forgotPasswordTitle,
-            style: AppTypography.displayMedium.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            AppStrings.forgotPasswordSubtitle,
-            style: AppTypography.bodyLarge.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 32),
-
-          CustomTextField(
-            controller: _emailController,
-            labelText: AppStrings.email,
-            hintText: 'alex.morgan@nexatalk.app',
-            keyboardType: TextInputType.emailAddress,
-            prefixIcon: const Icon(Icons.mail_outline_rounded, color: AppColors.textTertiary, size: 20),
-            validator: Validators.validateEmail,
-          ),
-          const SizedBox(height: 28),
-
-          PrimaryButton(
-            text: AppStrings.sendResetLink,
-            onPressed: _handleSendReset,
-            isLoading: auth.isLoading,
-            icon: Icons.send_rounded,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSuccessState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 88,
-            height: 88,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.surfaceElevated,
-              border: Border.all(color: AppColors.primaryCyan, width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primaryCyan.withValues(alpha: 0.3),
-                  blurRadius: 24,
-                  spreadRadius: 4,
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.mark_email_read_rounded,
-              size: 42,
-              color: AppColors.primaryCyan,
-            ),
-          ),
-          const SizedBox(height: 28),
-          Text(
-            AppStrings.resetLinkSentTitle,
-            style: AppTypography.headlineLarge.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'We have sent password recovery instructions to ${_emailController.text}. ${AppStrings.resetLinkSentDesc}',
-            textAlign: TextAlign.center,
-            style: AppTypography.bodyLarge.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 36),
-          SecondaryButton(
-            text: AppStrings.backToSignIn,
-            onPressed: () => Navigator.of(context).pop(),
-            icon: Icons.arrow_back_rounded,
-          ),
-        ],
       ),
     );
   }

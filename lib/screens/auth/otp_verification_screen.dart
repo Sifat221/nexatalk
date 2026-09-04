@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../controllers/auth_controller.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
-import '../../core/constants/app_typography.dart';
-import '../../widgets/otp_input_widget.dart';
-import '../../widgets/primary_button.dart';
 import '../../widgets/responsive_shell.dart';
 import '../home/home_screen.dart';
 
-/// Screen 5 — OTP 6-Digit Code Verification.
+/// Screen 5 — Verify OTP matching reference screen layout with custom numeric dialpad.
 class OtpVerificationScreen extends StatefulWidget {
   final String destination;
 
@@ -25,13 +23,31 @@ class OtpVerificationScreen extends StatefulWidget {
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   String _otpCode = '';
 
-  Future<void> _handleVerify() async {
-    if (_otpCode.length != 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter all 6 digits of the code')),
-      );
-      return;
+  void _onKeyPress(String digit) {
+    if (_otpCode.length < 6) {
+      HapticFeedback.selectionClick();
+      setState(() {
+        _otpCode += digit;
+      });
+      context.read<AuthController>().clearError();
+      if (_otpCode.length == 6) {
+        _handleVerify();
+      }
     }
+  }
+
+  void _onBackspace() {
+    if (_otpCode.isNotEmpty) {
+      HapticFeedback.selectionClick();
+      setState(() {
+        _otpCode = _otpCode.substring(0, _otpCode.length - 1);
+      });
+      context.read<AuthController>().clearError();
+    }
+  }
+
+  Future<void> _handleVerify() async {
+    if (_otpCode.length != 6) return;
 
     final auth = context.read<AuthController>();
     final success = await auth.verifyOtp(_otpCode);
@@ -46,19 +62,20 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   void _handleResend() {
     final auth = context.read<AuthController>();
-    if (widget.destination.startsWith('+') || RegExp(r'^\d').hasMatch(widget.destination)) {
+    final dest = widget.destination.isNotEmpty ? widget.destination : '+880 1234-567890';
+    if (dest.startsWith('+') || RegExp(r'^\d').hasMatch(dest)) {
       auth.sendPhoneOtp(
-        widget.destination,
+        dest,
         onCodeSent: (_) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('A verification code has been sent to ${widget.destination}')),
+            SnackBar(content: Text('A verification code has been sent to $dest')),
           );
         },
       );
     } else {
       auth.startOtpCountdown();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('A new 6-digit verification code has been sent! (Use 123456)')),
+        const SnackBar(content: Text('Verification code resent! (Demo code: 123456)')),
       );
     }
   }
@@ -66,46 +83,53 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthController>();
+    final displayDestination = widget.destination.isNotEmpty
+        ? widget.destination
+        : '+880 1234-567890';
 
     return ResponsiveShell(
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Colors.white),
+            onPressed: () {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              }
+            },
           ),
         ),
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  AppStrings.verifyNumber,
-                  style: AppTypography.displayMedium.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
                 const SizedBox(height: 8),
-                RichText(
-                  text: TextSpan(
-                    style: AppTypography.bodyLarge.copyWith(color: AppColors.textSecondary),
-                    children: [
-                      const TextSpan(text: 'Enter the 6-digit verification code sent to '),
-                      TextSpan(
-                        text: widget.destination,
-                        style: const TextStyle(
-                          color: AppColors.primaryLight,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const TextSpan(text: '. (Demo code: 123456)'),
-                    ],
+                // Heading: Verify your number
+                const Text(
+                  AppStrings.verifyNumber,
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.4,
                   ),
                 ),
-                const SizedBox(height: 36),
+                const SizedBox(height: 6),
+                Text(
+                  'Enter the 6-digit code we sent to\n$displayDestination',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF8E9FA8),
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 28),
 
                 if (auth.errorMessage != null) ...[
                   Container(
@@ -128,47 +152,74 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                 ],
 
-                // 6-digit OTP Box Input
-                OtpInputWidget(
-                  length: 6,
-                  onCompleted: (code) {
-                    setState(() => _otpCode = code);
-                    _handleVerify();
-                  },
-                  onChanged: (code) {
-                    setState(() => _otpCode = code);
-                    auth.clearError();
-                  },
-                ),
-                const SizedBox(height: 28),
+                // 6 Rounded OTP Boxes side-by-side
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(6, (index) {
+                    final hasChar = index < _otpCode.length;
+                    final char = hasChar ? _otpCode[index] : '';
+                    final isActive = index == _otpCode.length || (_otpCode.length == 6 && index == 5);
 
-                // Resend Timer & Action
+                    return Container(
+                      width: 48,
+                      height: 54,
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isActive
+                              ? AppColors.primaryCyan
+                              : hasChar
+                                  ? AppColors.primaryCyan.withValues(alpha: 0.5)
+                                  : AppColors.surfaceBorder,
+                          width: isActive ? 1.8 : 1.2,
+                        ),
+                        boxShadow: isActive
+                            ? [
+                                BoxShadow(
+                                  color: AppColors.primaryCyan.withValues(alpha: 0.35),
+                                  blurRadius: 8,
+                                  spreadRadius: 1,
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Center(
+                        child: Text(
+                          char,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+                const SizedBox(height: 20),
+
+                // Resend Countdown / Link
                 Center(
                   child: auth.otpCountdown > 0
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.timer_outlined, size: 16, color: AppColors.textTertiary),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Resend code in ${auth.otpCountdown}s',
-                              style: AppTypography.bodySmall.copyWith(
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
+                      ? Text(
+                          'Resend code in 00:${auth.otpCountdown.toString().padLeft(2, '0')}',
+                          style: const TextStyle(
+                            color: Color(0xFF5A7285),
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w500,
+                          ),
                         )
-                      : TextButton.icon(
+                      : TextButton(
                           onPressed: _handleResend,
-                          icon: const Icon(Icons.refresh_rounded, size: 18, color: AppColors.primaryCyan),
-                          label: Text(
+                          child: const Text(
                             AppStrings.resendCode,
-                            style: AppTypography.labelLarge.copyWith(
+                            style: TextStyle(
                               color: AppColors.primaryCyan,
+                              fontSize: 13.5,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -176,16 +227,115 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 ),
                 const Spacer(),
 
-                // Verify Button
-                PrimaryButton(
-                  text: AppStrings.verify,
-                  onPressed: _otpCode.length == 6 ? _handleVerify : null,
-                  isLoading: auth.isLoading,
-                  icon: Icons.verified_rounded,
-                ),
-                const SizedBox(height: 20),
+                // Custom On-Screen Keypad matching reference Screen 5
+                _buildKeypad(),
+                const SizedBox(height: 12),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKeypad() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            _buildKeypadKey('1', ''),
+            const SizedBox(width: 8),
+            _buildKeypadKey('2', 'ABC'),
+            const SizedBox(width: 8),
+            _buildKeypadKey('3', 'DEF'),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            _buildKeypadKey('4', 'GHI'),
+            const SizedBox(width: 8),
+            _buildKeypadKey('5', 'JKL'),
+            const SizedBox(width: 8),
+            _buildKeypadKey('6', 'MNO'),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            _buildKeypadKey('7', 'PQRS'),
+            const SizedBox(width: 8),
+            _buildKeypadKey('8', 'TUV'),
+            const SizedBox(width: 8),
+            _buildKeypadKey('9', 'WXYZ'),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Expanded(child: SizedBox(height: 52)),
+            const SizedBox(width: 8),
+            _buildKeypadKey('0', ''),
+            const SizedBox(width: 8),
+            Expanded(
+              child: InkWell(
+                onTap: _onBackspace,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.surfaceBorder, width: 1),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.backspace_outlined, size: 20, color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildKeypadKey(String number, String letters) {
+    return Expanded(
+      child: InkWell(
+        onTap: () => _onKeyPress(number),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          height: 52,
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.surfaceBorder, width: 1),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                number,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  height: 1.1,
+                ),
+              ),
+              if (letters.isNotEmpty)
+                Text(
+                  letters,
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF5A7285),
+                    letterSpacing: 0.8,
+                    height: 1.0,
+                  ),
+                ),
+            ],
           ),
         ),
       ),

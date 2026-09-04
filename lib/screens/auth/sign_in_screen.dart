@@ -3,18 +3,15 @@ import 'package:provider/provider.dart';
 import '../../controllers/auth_controller.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
-import '../../core/constants/app_typography.dart';
 import '../../core/utils/validators.dart';
-import '../../widgets/app_logo.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/responsive_shell.dart';
-import '../../widgets/secondary_button.dart';
 import '../home/home_screen.dart';
 import 'forgot_password_screen.dart';
 import 'sign_up_screen.dart';
 
-/// Screen 3 — Modern Authentication / Sign In.
+/// Screen 3 — Sign In matching reference screen layout.
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
 
@@ -44,14 +41,9 @@ class _SignInScreenState extends State<SignInScreen> {
     );
 
     if (success && mounted) {
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 300),
-        ),
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
       );
     }
   }
@@ -60,8 +52,9 @@ class _SignInScreenState extends State<SignInScreen> {
     final auth = context.read<AuthController>();
     final success = await auth.quickDemoLogin();
     if (success && mounted) {
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
       );
     }
   }
@@ -70,8 +63,9 @@ class _SignInScreenState extends State<SignInScreen> {
     final auth = context.read<AuthController>();
     final success = await auth.googleSignIn();
     if (success && mounted) {
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
       );
     }
   }
@@ -80,8 +74,9 @@ class _SignInScreenState extends State<SignInScreen> {
     final auth = context.read<AuthController>();
     final success = await auth.appleSignIn();
     if (success && mounted) {
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
       );
     }
   }
@@ -93,37 +88,47 @@ class _SignInScreenState extends State<SignInScreen> {
     return ResponsiveShell(
       child: Scaffold(
         backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Colors.white),
+            onPressed: () {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              }
+            },
+          ),
+        ),
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 16),
-                  const Center(
-                    child: AppLogo(
-                      size: 60,
-                      showText: false,
-                      showTagline: false,
+                  const SizedBox(height: 8),
+                  // Heading: Welcome back 👋
+                  const Text(
+                    AppStrings.welcomeBack,
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: -0.4,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    AppStrings.signInSubtitle,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF8E9FA8),
                     ),
                   ),
                   const SizedBox(height: 28),
-                  Text(
-                    AppStrings.welcomeBack,
-                    style: AppTypography.displayMedium.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    AppStrings.signInSubtitle,
-                    style: AppTypography.bodyLarge.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
 
                   if (auth.errorMessage != null) ...[
                     Container(
@@ -153,9 +158,8 @@ class _SignInScreenState extends State<SignInScreen> {
                   CustomTextField(
                     controller: _emailController,
                     labelText: AppStrings.email,
-                    hintText: 'alex.morgan@nexatalk.app',
+                    hintText: 'example@email.com',
                     keyboardType: TextInputType.emailAddress,
-                    prefixIcon: const Icon(Icons.mail_outline_rounded, color: AppColors.textTertiary, size: 20),
                     validator: Validators.validateEmail,
                   ),
                   const SizedBox(height: 20),
@@ -164,125 +168,141 @@ class _SignInScreenState extends State<SignInScreen> {
                   CustomTextField(
                     controller: _passwordController,
                     labelText: AppStrings.password,
-                    hintText: '••••••••',
+                    hintText: '••••••••••••',
                     obscureText: !auth.isPasswordVisible,
-                    prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.textTertiary, size: 20),
                     suffixIcon: IconButton(
                       icon: Icon(
                         auth.isPasswordVisible
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
-                        color: AppColors.textTertiary,
+                        color: const Color(0xFF5A7285),
                         size: 20,
                       ),
                       onPressed: auth.togglePasswordVisibility,
                     ),
                     validator: Validators.validatePassword,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
 
-                  // Forgot Password
+                  // Forgot Password Link
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(50, 30),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
                         );
                       },
-                      child: Text(
+                      child: const Text(
                         AppStrings.forgotPassword,
-                        style: AppTypography.labelMedium.copyWith(
-                          color: AppColors.primaryLight,
+                        style: TextStyle(
+                          color: AppColors.primaryCyan,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
 
                   // Primary Sign In Button
                   PrimaryButton(
                     text: AppStrings.signIn,
                     onPressed: _handleSignIn,
                     isLoading: auth.isLoading,
-                    icon: Icons.login_rounded,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Quick One-Tap Demo Login
-                  SecondaryButton(
-                    text: AppStrings.quickDemoLogin,
-                    onPressed: _handleQuickDemoLogin,
-                    icon: Icons.bolt_rounded,
-                    borderColor: AppColors.primaryCyan.withValues(alpha: 0.3),
-                    textColor: AppColors.primaryLight,
+                    height: 52,
                   ),
                   const SizedBox(height: 28),
 
-                  // Divider
+                  // "or continue with" Divider
                   Row(
                     children: [
-                      Expanded(
-                        child: Divider(color: AppColors.divider.withValues(alpha: 0.15)),
+                      const Expanded(
+                        child: Divider(color: Color(0xFF1D3546), thickness: 1),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
                           AppStrings.orContinueWith,
-                          style: AppTypography.bodySmall.copyWith(color: AppColors.textTertiary),
+                          style: const TextStyle(color: Color(0xFF5A7285), fontSize: 13),
                         ),
                       ),
-                      Expanded(
-                        child: Divider(color: AppColors.divider.withValues(alpha: 0.15)),
+                      const Expanded(
+                        child: Divider(color: Color(0xFF1D3546), thickness: 1),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 22),
 
-                  // Social Buttons
+                  // 3 Rounded Social Square Tiles
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Expanded(
-                        child: SecondaryButton(
-                          text: AppStrings.google,
-                          icon: Icons.g_mobiledata_rounded,
-                          onPressed: _handleGoogleSignIn,
-                          height: 48,
-                        ),
+                      _buildSocialTile(
+                        icon: Icons.g_mobiledata_rounded,
+                        iconSize: 32,
+                        onTap: _handleGoogleSignIn,
                       ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: SecondaryButton(
-                          text: AppStrings.apple,
-                          icon: Icons.apple_rounded,
-                          onPressed: _handleAppleSignIn,
-                          height: 48,
-                        ),
+                      const SizedBox(width: 16),
+                      _buildSocialTile(
+                        icon: Icons.apple_rounded,
+                        iconSize: 26,
+                        onTap: _handleAppleSignIn,
+                      ),
+                      const SizedBox(width: 16),
+                      _buildSocialTile(
+                        icon: Icons.mail_outline_rounded,
+                        iconSize: 22,
+                        onTap: _handleQuickDemoLogin,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 18),
 
-                  // Footer Sign Up Link
+                  // Quick Demo Login Chip (ensures widget test passing and easy testing)
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: _handleQuickDemoLogin,
+                      icon: const Icon(Icons.bolt_rounded, size: 16, color: AppColors.primaryLight),
+                      label: Text(
+                        AppStrings.quickDemoLogin,
+                        style: const TextStyle(
+                          color: Color(0xFF8E9FA8),
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Footer: Don't have an account? Sign up
                   Center(
                     child: Wrap(
                       alignment: WrapAlignment.center,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Text(
+                        const Text(
                           AppStrings.dontHaveAccount,
-                          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+                          style: TextStyle(color: Color(0xFF8E9FA8), fontSize: 14),
                         ),
-                        TextButton(
-                          onPressed: () {
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(builder: (_) => const SignUpScreen()),
                             );
                           },
                           child: Text(
                             AppStrings.signUp,
-                            style: AppTypography.labelLarge.copyWith(
+                            style: const TextStyle(
                               color: AppColors.primaryCyan,
+                              fontSize: 14,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -295,6 +315,29 @@ class _SignInScreenState extends State<SignInScreen> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSocialTile({
+    required IconData icon,
+    required double iconSize,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        width: 64,
+        height: 52,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.surfaceBorder, width: 1.2),
+        ),
+        child: Center(
+          child: Icon(icon, size: iconSize, color: Colors.white),
         ),
       ),
     );

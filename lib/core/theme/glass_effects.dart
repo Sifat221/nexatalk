@@ -109,18 +109,18 @@ class GlassEffects {
     }
 
     return BoxDecoration(
-      gradient: AppColors.primaryGradient,
-      borderRadius: AppRadius.roundedXl,
+      gradient: AppColors.buttonGradient,
+      borderRadius: BorderRadius.circular(16),
       boxShadow: [
         BoxShadow(
           color: isPressed
               ? AppColors.primaryCyan.withValues(alpha: 0.2)
               : isHovered
-                  ? AppColors.primaryCyan.withValues(alpha: 0.5)
-                  : AppColors.primaryCyan.withValues(alpha: 0.35),
-          blurRadius: isHovered ? 20 : 12,
+                  ? AppColors.primaryCyan.withValues(alpha: 0.45)
+                  : AppColors.primaryCyan.withValues(alpha: 0.28),
+          blurRadius: isHovered ? 16 : 10,
           spreadRadius: isHovered ? 1 : 0,
-          offset: const Offset(0, 4),
+          offset: const Offset(0, 3),
         ),
       ],
     );

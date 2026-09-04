@@ -7,13 +7,14 @@ import '../../core/constants/app_radius.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/constants/app_typography.dart';
 import '../../widgets/app_logo.dart';
-import '../../widgets/section_header.dart';
-import '../../widgets/settings_tile.dart';
+import '../../widgets/responsive_shell.dart';
 import '../auth/sign_in_screen.dart';
 
-/// Screen 11 — Settings and Preferences Screen.
+/// Screen 12 — Settings Screen matching reference layout with unified card and separated logout card.
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+  final bool showBackButton;
+
+  const SettingsScreen({super.key, this.showBackButton = true});
 
   void _showAboutDialog(BuildContext context) {
     showDialog(
@@ -32,7 +33,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'NexaTalk is built with Flutter and designed with a dark-first midnight-navy palette, fluid micro-animations, and clean abstract service layers ready for future Firebase backend integrations.',
+              'NexaTalk is a state-of-the-art secure messaging experience with real-time Firebase backend sync, dark-first aesthetics, and fluid micro-animations.',
               textAlign: TextAlign.center,
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
@@ -78,140 +79,12 @@ class SettingsScreen extends StatelessWidget {
                 );
               }
             },
-            child: const Text(AppStrings.logOut, style: TextStyle(color: AppColors.error)),
+            child: const Text(AppStrings.logOut, style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
     );
   }
-
-  @override
-  Widget build(BuildContext context) {
-    final settingsCtrl = context.watch<SettingsController>();
-
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Text(
-                AppStrings.settings,
-                style: AppTypography.displayMedium.copyWith(fontWeight: FontWeight.w800),
-              ),
-            ),
-
-            // Account Section
-            const SectionHeader(title: AppStrings.account),
-            SettingsTile(
-              icon: Icons.shield_outlined,
-              title: AppStrings.security,
-              subtitle: 'Passcode, 2FA, session activity',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Security settings updated')),
-                );
-              },
-            ),
-            SettingsTile(
-              icon: Icons.block_rounded,
-              title: AppStrings.blockedUsers,
-              subtitle: '0 blocked contacts',
-              onTap: () {},
-            ),
-            SettingsTile(
-              icon: Icons.translate_rounded,
-              title: AppStrings.language,
-              subtitle: settingsCtrl.language,
-              onTap: () {
-                _showLanguageSheet(context, settingsCtrl);
-              },
-            ),
-
-            // Preferences Section
-            const SectionHeader(title: AppStrings.preferences),
-            SettingsTile(
-              icon: Icons.notifications_none_rounded,
-              title: AppStrings.notifications,
-              subtitle: 'Push notifications & message badges',
-              trailing: Switch(
-                value: settingsCtrl.notificationsEnabled,
-                activeThumbColor: AppColors.primaryCyan,
-                activeTrackColor: AppColors.primaryDark,
-                onChanged: (val) => settingsCtrl.toggleNotifications(val),
-              ),
-            ),
-            SettingsTile(
-              icon: Icons.dark_mode_outlined,
-              title: AppStrings.oledDarkMode,
-              subtitle: 'Ultra-deep black background for OLED screens',
-              trailing: Switch(
-                value: settingsCtrl.oledMode,
-                activeThumbColor: AppColors.primaryCyan,
-                activeTrackColor: AppColors.primaryDark,
-                onChanged: (val) => settingsCtrl.toggleOledMode(val),
-              ),
-            ),
-            SettingsTile(
-              icon: Icons.vibration_rounded,
-              title: AppStrings.hapticFeedback,
-              subtitle: 'Subtle touch vibrations on actions',
-              trailing: Switch(
-                value: settingsCtrl.hapticsEnabled,
-                activeThumbColor: AppColors.primaryCyan,
-                activeTrackColor: AppColors.primaryDark,
-                onChanged: (val) => settingsCtrl.toggleHaptics(val),
-              ),
-            ),
-            SettingsTile(
-              icon: Icons.done_all_rounded,
-              title: AppStrings.readReceipts,
-              subtitle: 'Show when messages have been seen',
-              trailing: Switch(
-                value: settingsCtrl.readReceipts,
-                activeThumbColor: AppColors.primaryCyan,
-                activeTrackColor: AppColors.primaryDark,
-                onChanged: (val) => settingsCtrl.toggleReadReceipts(val),
-              ),
-            ),
-
-            // Support Section
-            const SectionHeader(title: AppStrings.support),
-            SettingsTile(
-              icon: Icons.help_outline_rounded,
-              title: AppStrings.helpAndSupport,
-              subtitle: 'FAQs, contact support, guides',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('NexaTalk Help Center is available 24/7')),
-                );
-              },
-            ),
-            SettingsTile(
-              icon: Icons.info_outline_rounded,
-              title: AppStrings.aboutNexaTalk,
-              subtitle: 'Version ${AppStrings.appVersion}',
-              onTap: () => _showAboutDialog(context),
-            ),
-
-            const SizedBox(height: 16),
-            // Danger Zone
-            SettingsTile(
-              icon: Icons.logout_rounded,
-              title: AppStrings.logOut,
-              isDestructive: true,
-              onTap: () => _showLogoutDialog(context),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
 
   void _showLanguageSheet(BuildContext context, SettingsController settingsCtrl) {
     final languages = ['English (US)', 'Spanish (ES)', 'French (FR)', 'German (DE)', 'Japanese (JP)'];
@@ -253,6 +126,281 @@ class SettingsScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settingsCtrl = context.watch<SettingsController>();
+
+    return ResponsiveShell(
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: showBackButton
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Colors.white),
+                  onPressed: () => Navigator.maybePop(context),
+                )
+              : null,
+          title: const Text(
+            AppStrings.settings,
+            style: AppTypography.titleLarge,
+          ),
+          centerTitle: false,
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 36),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12),
+
+                // Main Settings Unified Dark Container
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.surfaceBorder.withValues(alpha: 0.6),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Security
+                      _buildSettingRow(
+                        icon: Icons.shield_outlined,
+                        title: AppStrings.security,
+                        subtitle: 'Change password',
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Two-factor security & passcode active')),
+                          );
+                        },
+                      ),
+                      _buildDivider(),
+
+                      // Blocked Users
+                      _buildSettingRow(
+                        icon: Icons.block_rounded,
+                        title: AppStrings.blockedUsers,
+                        subtitle: 'Manage blocked users',
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('No blocked users found')),
+                          );
+                        },
+                      ),
+                      _buildDivider(),
+
+                      // Notifications Switch
+                      _buildSwitchRow(
+                        icon: Icons.notifications_none_rounded,
+                        title: AppStrings.notifications,
+                        value: settingsCtrl.notificationsEnabled,
+                        onChanged: (val) => settingsCtrl.toggleNotifications(val),
+                      ),
+                      _buildDivider(),
+
+                      // OLED Dark Mode Switch
+                      _buildSwitchRow(
+                        icon: Icons.dark_mode_outlined,
+                        title: AppStrings.oledDarkMode,
+                        value: settingsCtrl.oledMode,
+                        onChanged: (val) => settingsCtrl.toggleOledMode(val),
+                      ),
+                      _buildDivider(),
+
+                      // Language
+                      _buildSettingRow(
+                        icon: Icons.translate_rounded,
+                        title: AppStrings.language,
+                        subtitle: 'English',
+                        onTap: () => _showLanguageSheet(context, settingsCtrl),
+                      ),
+                      _buildDivider(),
+
+                      // Help & Support
+                      _buildSettingRow(
+                        icon: Icons.help_outline_rounded,
+                        title: AppStrings.helpAndSupport,
+                        subtitle: 'Get help',
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('NexaTalk Help Center is available 24/7')),
+                          );
+                        },
+                      ),
+                      _buildDivider(),
+
+                      // About NexaTalk
+                      _buildSettingRow(
+                        icon: Icons.info_outline_rounded,
+                        title: AppStrings.aboutNexaTalk,
+                        subtitle: 'Version 1.0.0',
+                        onTap: () => _showAboutDialog(context),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Visually Separated Bottom Card: Red Log Out
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppColors.error.withValues(alpha: 0.25),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _showLogoutDialog(context),
+                      borderRadius: BorderRadius.circular(16),
+                      splashColor: AppColors.error.withValues(alpha: 0.1),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.logout_rounded,
+                              color: AppColors.error,
+                              size: 22,
+                            ),
+                            const SizedBox(width: 16),
+                            const Expanded(
+                              child: Text(
+                                AppStrings.logOut,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.error,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right_rounded,
+                              color: AppColors.error.withValues(alpha: 0.5),
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingRow({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      splashColor: AppColors.primaryCyan.withValues(alpha: 0.1),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.white, size: 22),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: Color(0xFF8E9FA8),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xFF5A7285),
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSwitchRow({
+    required IconData icon,
+    required String title,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white, size: 22),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 15.5,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          Switch(
+            value: value,
+            activeThumbColor: AppColors.primaryCyan,
+            activeTrackColor: AppColors.primaryDark,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      indent: 56,
+      endIndent: 16,
+      color: AppColors.surfaceBorder.withValues(alpha: 0.4),
     );
   }
 }
