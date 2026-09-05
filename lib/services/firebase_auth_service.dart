@@ -251,28 +251,6 @@ class FirebaseAuthService implements AuthService {
     return _syncFirestoreUser(userCred.user!);
   }
 
-  /// One-click Demo Login strictly isolated to local debug mode.
-  Future<UserModel> demoLogin(String role) async {
-    if (!kDebugMode) {
-      throw UnsupportedError('Demo login is strictly disabled in production.');
-    }
-    final email = role == 'secondary'
-        ? 'maya.chen@nexatalk.app'
-        : 'alex.morgan@nexatalk.app';
-    const password = 'NexaTalkDemo2026!';
-
-    try {
-      return await signIn(email, password);
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
-        // Auto-provision demo account in Firebase
-        final name = role == 'secondary' ? 'Maya Chen' : 'Alex Morgan';
-        return await signUp(name, email, password);
-      }
-      rethrow;
-    }
-  }
-
   @override
   Future<void> sendPasswordReset(String email) async {
     await _auth.sendPasswordResetEmail(email: email.trim());
@@ -327,7 +305,21 @@ class FirebaseAuthService implements AuthService {
 
     await _firestore.collection('users').doc(firebaseUser.uid).set(updates, SetOptions(merge: true));
 
-    final updated = (_currentUser ?? UserModel.demoUser).copyWith(
+    final existingUser = _currentUser ??
+        UserModel(
+          id: firebaseUser.uid,
+          name: firebaseUser.displayName ?? (firebaseUser.email?.split('@').first ?? 'User'),
+          email: firebaseUser.email ?? '',
+          username: firebaseUser.email?.split('@').first ?? 'user',
+          phone: firebaseUser.phoneNumber,
+          bio: 'Connect simply. Chat naturally. ✨',
+          avatarColor: '0xFF00E5D0',
+          avatarUrl: firebaseUser.photoURL,
+          isOnline: true,
+          lastActive: DateTime.now(),
+        );
+
+    final updated = existingUser.copyWith(
       name: name,
       bio: bio,
       avatarColor: avatarColor,

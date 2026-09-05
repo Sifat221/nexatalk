@@ -416,9 +416,9 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppColors.backgroundSecondary,
       body: Row(
         children: [
-          // Left Pane (Chats List & Tabs)
+          // Left Pane (Full navigation with Chats, Contacts, Profile & Bottom Navigation)
           SizedBox(
-            width: 380,
+            width: 400,
             child: Container(
               decoration: BoxDecoration(
                 color: AppColors.background,
@@ -426,7 +426,45 @@ class _HomeScreenState extends State<HomeScreen> {
                   right: BorderSide(color: AppColors.surfaceBorder.withValues(alpha: 0.6), width: 1),
                 ),
               ),
-              child: _buildChatsTab(),
+              child: Scaffold(
+                backgroundColor: AppColors.background,
+                body: IndexedStack(
+                  index: _selectedTabIndex,
+                  children: [
+                    _buildChatsTab(),
+                    const _ContactsTab(),
+                    const ProfileScreen(),
+                  ],
+                ),
+                bottomNavigationBar: _buildBottomNav(),
+                floatingActionButton: _selectedTabIndex == 0
+                    ? Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primaryCyan.withValues(alpha: 0.4),
+                              blurRadius: 14,
+                              spreadRadius: 1,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: FloatingActionButton(
+                          shape: const CircleBorder(),
+                          backgroundColor: AppColors.primaryCyan,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const NewConversationScreen()),
+                            );
+                          },
+                          child: const Icon(Icons.edit_rounded, size: 24, color: Colors.white),
+                        ),
+                      )
+                    : null,
+              ),
             ),
           ),
           // Right Pane (Active Conversation or Empty Desktop View)

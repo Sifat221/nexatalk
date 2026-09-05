@@ -66,12 +66,17 @@ class UserModel {
   }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    final nameVal = json['name'] ?? json['displayName'] ?? 'Alex Morgan';
+    final emailVal = json['email'] as String? ?? '';
+    final defaultName = emailVal.contains('@') ? emailVal.split('@').first : 'User';
+    final nameVal = json['name'] ?? json['displayName'] ?? defaultName;
+    final defaultUsername = emailVal.contains('@')
+        ? emailVal.split('@').first.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '_').toLowerCase()
+        : 'user';
     return UserModel(
-      id: json['id'] as String? ?? 'user_1',
+      id: json['id'] as String? ?? '',
       name: nameVal as String,
-      email: json['email'] as String? ?? 'alex@nexatalk.com',
-      username: json['username'] as String? ?? 'alex_morgan',
+      email: emailVal,
+      username: json['username'] as String? ?? defaultUsername,
       phone: json['phone'] as String?,
       bio: json['bio'] as String? ?? 'Connect simply. Chat naturally. ✨',
       avatarColor: json['avatarColor'] as String? ?? '0xFF00E5D0',
@@ -84,17 +89,4 @@ class UserModel {
               : DateTime.now()),
     );
   }
-
-  /// Demo default user
-  static UserModel get demoUser => UserModel(
-        id: 'usr_me_001',
-        name: 'Alex Morgan',
-        email: 'alex.morgan@nexatalk.app',
-        username: 'alex_morgan',
-        phone: '+1 (555) 019-2834',
-        bio: 'Designing the future of communication ✨',
-        avatarColor: '0xFF00E5D0',
-        isOnline: true,
-        lastActive: DateTime.now(),
-      );
 }

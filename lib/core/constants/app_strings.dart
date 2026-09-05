@@ -35,7 +35,6 @@ class AppStrings {
   static const String orContinueWith = 'or continue with';
   static const String google = 'Google';
   static const String apple = 'Apple';
-  static const String quickDemoLogin = 'Quick Demo Login';
   static const String dontHaveAccount = "Don't have an account?";
   static const String signUp = 'Sign Up';
 
@@ -48,7 +47,7 @@ class AppStrings {
 
   // Auth - OTP
   static const String verifyNumber = 'Verify your number';
-  static const String verifyOtpSubtitle = 'Enter the 6-digit code we sent to\n+880 1234-567890';
+  static const String verifyOtpSubtitle = 'Enter the 6-digit code we sent to your device';
   static const String resendCode = 'Resend code';
   static const String verify = 'Verify';
 

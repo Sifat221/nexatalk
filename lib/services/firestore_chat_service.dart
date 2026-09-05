@@ -12,6 +12,7 @@ import 'persistence_service.dart';
 /// Provides multi-user real-time messaging, typing indicators, presence, read receipts, and reactions.
 class FirestoreChatService implements ChatService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final PersistenceService persistence;
 
   final StreamController<List<ConversationModel>> _conversationsController =
@@ -244,9 +245,9 @@ class FirestoreChatService implements ChatService {
 
     final myParticipantData = {
       'id': currentUserId,
-      'name': currentUser?.name ?? 'Alex Morgan',
-      'email': currentUser?.email ?? 'alex@nexatalk.app',
-      'roleOrTag': '@${currentUser?.username ?? 'alex'}',
+      'name': currentUser?.name ?? (_auth.currentUser?.displayName ?? 'User'),
+      'email': currentUser?.email ?? (_auth.currentUser?.email ?? ''),
+      'roleOrTag': '@${currentUser?.username ?? (_auth.currentUser?.email?.split('@').first ?? 'user')}',
       'status': currentUser?.bio ?? 'Available',
       'isOnline': true,
     };

@@ -94,8 +94,8 @@ class MockAuthService implements AuthService {
   Future<bool> verifyOtp(String code) async {
     await Future.delayed(const Duration(milliseconds: 500));
     if (code.length == 6) {
-      final email = _pendingSignUpEmail ?? 'alex.morgan@nexatalk.app';
-      final name = _pendingSignUpName ?? 'Alex Morgan';
+      final email = _pendingSignUpEmail ?? 'user@nexatalk.app';
+      final name = _pendingSignUpName ?? (email.split('@').first);
 
       final user = UserModel(
         id: 'usr_${email.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}',

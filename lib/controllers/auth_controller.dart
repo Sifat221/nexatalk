@@ -118,28 +118,6 @@ class AuthController extends ChangeNotifier {
     }
   }
 
-  Future<bool> quickDemoLogin() async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
-    try {
-      final auth = _authService;
-      if (auth is FirebaseAuthService) {
-        final user = await auth.demoLogin('primary');
-        _currentUser = user;
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      }
-      return signIn('alex.morgan@nexatalk.app', 'NexaTalkDemo2026!');
-    } catch (e) {
-      _isLoading = false;
-      _errorMessage = _getFriendlyErrorMessage(e);
-      notifyListeners();
-      return false;
-    }
-  }
 
   Future<bool> signUp(String name, String email, String password) async {
     _isLoading = true;

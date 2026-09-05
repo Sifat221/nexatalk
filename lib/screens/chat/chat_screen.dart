@@ -39,8 +39,10 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final chatCtrl = context.read<ChatController>();
+      chatCtrl.selectConversation(widget.conversation);
       _scrollToBottom(animate: false);
-      context.read<ChatController>().markAsRead(widget.conversation.id);
+      chatCtrl.markAsRead(widget.conversation.id);
     });
   }
 
@@ -219,7 +221,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ],
         ),
         content: Text(
-          'Connecting to ${widget.conversation.participant.name}...\n(Demo Mode: WebRTC / VoIP integration ready)',
+          'Connecting to ${widget.conversation.participant.name}...',
           style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
         ),
         actions: [

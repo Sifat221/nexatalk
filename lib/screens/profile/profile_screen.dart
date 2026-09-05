@@ -446,18 +446,12 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      // 1. Account
+                    // 1. Account
                       _buildMenuTile(
                         icon: Icons.person_outline_rounded,
                         title: 'Account',
                         subtitle: 'Edit your information',
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const SettingsScreen(showBackButton: true),
-                            ),
-                          );
-                        },
+                        onTap: () => _showEditProfileSheet(context),
                       ),
                       _buildDivider(),
 

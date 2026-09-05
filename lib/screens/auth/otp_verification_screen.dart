@@ -62,7 +62,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   void _handleResend() {
     final auth = context.read<AuthController>();
-    final dest = widget.destination.isNotEmpty ? widget.destination : '+880 1234-567890';
+    final dest = widget.destination.isNotEmpty
+        ? widget.destination
+        : (auth.currentUser?.email ?? 'your account');
     if (dest.startsWith('+') || RegExp(r'^\d').hasMatch(dest)) {
       auth.sendPhoneOtp(
         dest,
@@ -75,7 +77,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     } else {
       auth.startOtpCountdown();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Verification code resent! (Demo code: 123456)')),
+        SnackBar(content: Text('Verification code resent to $dest')),
       );
     }
   }
@@ -85,7 +87,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     final auth = context.watch<AuthController>();
     final displayDestination = widget.destination.isNotEmpty
         ? widget.destination
-        : '+880 1234-567890';
+        : (auth.currentUser?.email ?? 'your account');
 
     return ResponsiveShell(
       child: Scaffold(
